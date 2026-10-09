@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>《上瘾》Hooked · 思维导图</title>
+<style>
+  :root {
+    --bg: #f6f7fb;
+    --canvas: #ffffff;
+    --ink: #1f2430;
+    --muted: #6b7280;
+    --line: #c9cedb;
+    --root-bg: #1f2430;
+    --root-ink: #ffffff;
+    --shadow: 0 1px 3px rgba(20, 24, 40, .10), 0 4px 14px rgba(20, 24, 40, .06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161d;
+      --canvas: #1b1e28;
+      --ink: #e8eaf2;
+      --muted: #9aa1b5;
+      --line: #3a4052;
+      --root-bg: #e8eaf2;
+      --root-ink: #14161d;
+      --shadow: 0 1px 3px rgba(0, 0, 0, .4);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  header {
+    padding: 14px 20px 10px;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  header h1 { font-size: 18px; font-weight: 700; }
+  header p { font-size: 13px; color: var(--muted); }
+  header .hint { margin-left: auto; font-size: 12px; color: var(--muted); }
+  #viewport {
+    flex: 1;
+    overflow: hidden;
+    cursor: grab;
+    position: relative;
+  }
+  #viewport.dragging { cursor: grabbing; }
+  #world { position: absolute; transform-origin: 0 0; }
+  svg#links { position: absolute; top: 0; left: 0; overflow: visible; pointer-events: none; }
+  .node {
+    position: absolute;
+    padding: 7px 12px;
+    border-radius: 10px;
+    background: var(--canvas);
+    box-shadow: var(--shadow);
+    font-size: 13px;
+    line-height: 1.45;
+    max-width: 300px;
+    white-space: nowrap;
+    border-left: 4px solid transparent;
+    user-select: none;
+  }
+  .node .sub { display: block; font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .node.depth-0 {
+    background: var(--root-bg);
+    color: var(--root-ink);
+    font-size: 17px;
+    font-weight: 700;
+    padding: 14px 20px;
+    border-radius: 14px;
+    border-left: none;
+    text-align: center;
+  }
+  .node.depth-0 .sub { color: inherit; opacity: .7; }
+  .node.depth-1 { font-weight: 700; font-size: 14px; cursor: pointer; }
+  .node.depth-2 { font-weight: 600; }
+  .node.depth-3 { box-shadow: none; background: transparent; border-left-width: 3px; border-radius: 0; padding: 2px 10px; color: var(--muted); }
+  .node.collapsed::after {
+    content: ' ⊕';
+    opacity: .55;
+    font-weight: 400;
+  }
+  #controls {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    display: flex;
+    gap: 8px;
+  }
+  #controls button {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--canvas);
+    color: var(--ink);
+    font-size: 17px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>《上瘾》Hooked 思维导图</h1>
+  <p>Nir Eyal · 让用户养成使用习惯的四大产品逻辑</p>
+  <span class="hint">拖拽平移 · 滚轮/按钮缩放 · 点击一级分支折叠</span>
+</header>
+<div id="viewport">
+  <div id="world">
+    <svg id="links"></svg>
+    <div id="nodes"></div>
+  </div>
+  <div id="controls">
+    <button id="zin" title="放大">＋</button>
+    <button id="zout" title="缩小">－</button>
+    <button id="zfit" title="适应屏幕">⤢</button>
+  </div>
+</div>
+
+<script>
+const COLORS = ['#e05d5d', '#e8933a', '#3aa457', '#3f8fd2', '#8a63d2', '#c94f9c'];
+
+const tree = {
+  label: '上瘾 Hooked',
+  sub: '触发 → 行动 → 多变的酬赏 → 投入',
+  children: [
+    {
+      label: '① 习惯的力量', sub: '第1章 · The Habit Zone', side: 'left',
+      children: [
+        { label: '习惯 = 无意识出现的行为', children: [] },
+        { label: '商业价值', children: [
+          { label: '提升用户终身价值 LTV' },
+          { label: '价格灵活性（先免费后收费）' },
+          { label: '加快增长（高频用户自传播）' },
+          { label: '竞争壁垒（QWERTY 效应）' },
+        ]},
+        { label: '习惯区间', children: [
+          { label: '发生频率：多久用一次' },
+          { label: '可感知用途：好处多明显' },
+        ]},
+        { label: '维生素 → 止痛药', children: [
+          { label: '起初可有可无，习惯后不用难受' },
+        ]},
+      ]
+    },
+    {
+      label: '② 触发 Trigger', sub: '第2章 · 行为的火花塞', side: 'left',
+      children: [
+        { label: '外部触发（4 种）', children: [
+          { label: '付费型：广告，拉新贵' },
+          { label: '回馈型：媒体曝光，不持久' },
+          { label: '人际型：好友推荐，最具病毒性' },
+          { label: '自主型：通知/红点，驱动回访' },
+        ]},
+        { label: '内部触发', children: [
+          { label: '与情绪、场景、日常绑定' },
+          { label: '负面情绪最强：无聊/孤独/焦虑/FOMO' },
+          { label: '“5 个为什么”挖情绪根源' },
+        ]},
+        { label: '目标：外部触发 → 内部触发自动唤起' },
+      ]
+    },
+    {
+      label: '③ 行动 Action', sub: '第3章 · 期待酬赏的直接反应', side: 'left',
+      children: [
+        { label: '福格行为模型 B = MAT', children: [
+          { label: 'Motivation 动机：趋乐避苦/希望/认同' },
+          { label: 'Ability 能力：行为难易程度' },
+          { label: 'Trigger 触发：行动信号' },
+        ]},
+        { label: '简洁性 6 要素', children: [
+          { label: '时间 · 金钱 · 体力' },
+          { label: '脑力 · 社会偏差 · 非常规性' },
+          { label: '先降门槛，再提动机' },
+        ]},
+        { label: '启发法（心理捷径）', children: [
+          { label: '稀缺 · 环境 · 锚定 · 赠券效应' },
+        ]},
+      ]
+    },
+    {
+      label: '④ 多变的酬赏', sub: '第4章 · Variable Reward', side: 'right',
+      children: [
+        { label: '满足的是“渴望”而非酬赏本身', children: [
+          { label: '多巴胺 + 老虎机原理' },
+        ]},
+        { label: '三种酬赏', children: [
+          { label: '社交酬赏：认同/点赞/连接' },
+          { label: '猎物酬赏：追逐信息与资源' },
+          { label: '自我酬赏：操控感/成就/终结感' },
+        ]},
+        { label: '保留自主权：强迫引发逆反' },
+        { label: '有限 vs 无穷多变性', children: [
+          { label: 'UGC/社交动态 → 常刷常新' },
+        ]},
+      ]
+    },
+    {
+      label: '⑤ 投入 Investment', sub: '第5章 · 让用户存下价值', side: 'right',
+      children: [
+        { label: '心理机制', children: [
+          { label: '宜家效应：高估自己的劳动' },
+          { label: '一致性偏好：为投入辩护' },
+        ]},
+        { label: '储存价值 5 种', children: [
+          { label: '内容：歌单/相册/笔记' },
+          { label: '数据：文件/履历' },
+          { label: '关注者：粉丝/人脉' },
+          { label: '信誉：评分/等级' },
+          { label: '技能：越熟练越难换' },
+        ]},
+        { label: '点燃下一个触发', children: [
+          { label: '发消息等回复 → 自己给自己上钩' },
+        ]},
+      ]
+    },
+    {
+      label: '⑥ 道德与实践', sub: '第6–8章', side: 'right',
+      children: [
+        { label: '操控矩阵（2 个问题）', children: [
+          { label: '我自己会用吗？能改善生活吗？' },
+          { label: '✅ 健康习惯推广者 / ⚠️ 兜售者' },
+          { label: '🎰 娱乐用户者 / ❌ 经销商' },
+        ]},
+        { label: '案例：《圣经》App 跑通全模型' },
+        { label: '习惯测试三步', children: [
+          { label: '确定习惯用户 → 分析路径 → 改进引导' },
+        ]},
+        { label: '机会：观察自身痒点 / 新技术新接口' },
+      ]
+    },
+  ]
+};
+
+const NODE_VGAP = 8, GROUP_VGAP = 18, HGAP = 46;
+const nodesEl = document.getElementById('nodes');
+const svg = document.getElementById('links');
+const world = document.getElementById('world');
+const viewport = document.getElementById('viewport');
+
+let uid = 0;
+function prepare(node, depth, color) {
+  node.id = uid++;
+  node.depth = depth;
+  node.color = color;
+  node.collapsed = false;
+  const el = document.createElement('div');
+  el.className = 'node depth-' + Math.min(depth, 3);
+  el.innerHTML = node.label + (node.sub ? '<span class="sub">' + node.sub + '</span>' : '');
+  if (depth >= 1 && color) el.style.borderLeftColor = color;
+  if (depth === 1) {
+    el.addEventListener('click', () => { node.collapsed = !node.collapsed; render(); });
+  }
+  nodesEl.appendChild(el);
+  node.el = el;
+  (node.children || []).forEach((c, i) =>
+    prepare(c, depth + 1, depth === 0 ? COLORS[i % COLORS.length] : color));
+}
+prepare(tree, 0, null);
+
+function measure(node) {
+  node.w = node.el.offsetWidth;
+  node.h = node.el.offsetHeight;
+  (node.children || []).forEach(measure);
+}
+
+function subtreeH(node, depth) {
+  const kids = (node.children || []);
+  if (node.collapsed || !kids.length) { node.sh = node.h; return node.sh; }
+  const gap = depth === 0 ? GROUP_VGAP : NODE_VGAP;
+  let sum = 0;
+  kids.forEach(k => sum += subtreeH(k, depth + 1));
+  node.sh = Math.max(node.h, sum + gap * (kids.length - 1));
+  return node.sh;
+}
+
+// place node with its subtree vertically centered at cy; grow toward `dir` (+1 right, -1 left)
+function place(node, x, cy, dir, depth) {
+  node.x = dir === 1 ? x : x - node.w;
+  node.y = cy - node.h / 2;
+  const kids = node.collapsed ? [] : (node.children || []);
+  if (!kids.length) return;
+  const gap = depth === 0 ? GROUP_VGAP : NODE_VGAP;
+  let cursor = cy - node.sh / 2;
+  const childX = dir === 1 ? node.x + node.w + HGAP : node.x - HGAP;
+  kids.forEach(k => {
+    place(k, childX, cursor + k.sh / 2, dir, depth + 1);
+    cursor += k.sh + gap;
+  });
+}
+
+function layout() {
+  measure(tree);
+  const left = tree.children.filter(c => c.side === 'left');
+  const right = tree.children.filter(c => c.side !== 'left');
+  const gapH = (arr) => {
+    arr.forEach(c => subtreeH(c, 1));
+    return arr.reduce((s, c) => s + c.sh, 0) + GROUP_VGAP * Math.max(0, arr.length - 1);
+  };
+  const lh = gapH(left), rh = gapH(right);
+  const rootX = 0, rootY = 0;
+  tree.x = rootX - tree.w / 2; tree.y = rootY - tree.h / 2;
+  let cursor = rootY - rh / 2;
+  right.forEach(c => { place(c, rootX + tree.w / 2 + HGAP + 14, cursor + c.sh / 2, 1, 1); cursor += c.sh + GROUP_VGAP; });
+  cursor = rootY - lh / 2;
+  left.forEach(c => { place(c, rootX - tree.w / 2 - HGAP - 14, cursor + c.sh / 2, -1, 1); cursor += c.sh + GROUP_VGAP; });
+}
+
+function edgePath(a, b) {
+  const aRight = b.x >= a.x + a.w;
+  const x1 = aRight ? a.x + a.w : a.x;
+  const y1 = a.y + a.h / 2;
+  const x2 = aRight ? b.x : b.x + b.w;
+  const y2 = b.y + b.h / 2;
+  const mx = (x1 + x2) / 2;
+  return `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`;
+}
+
+function draw(node, paths) {
+  node.el.style.display = '';
+  node.el.style.left = node.x + 'px';
+  node.el.style.top = node.y + 'px';
+  node.el.classList.toggle('collapsed', !!(node.collapsed && (node.children || []).length));
+  const kids = node.collapsed ? [] : (node.children || []);
+  kids.forEach(k => {
+    paths.push(`<path d="${edgePath(node, k)}" fill="none" stroke="${k.color || 'var(--line)'}" stroke-opacity="${k.depth === 1 ? .9 : .45}" stroke-width="${k.depth === 1 ? 2.4 : 1.6}"/>`);
+    draw(k, paths);
+  });
+  if (node.collapsed) hideAll(node.children || []);
+}
+function hideAll(list) { list.forEach(n => { n.el.style.display = 'none'; hideAll(n.children || []); }); }
+
+let view = { x: 0, y: 0, k: 1 };
+function applyView() {
+  world.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.k})`;
+}
+
+function render(keepView) {
+  layout();
+  const paths = [];
+  draw(tree, paths);
+  svg.innerHTML = paths.join('');
+  if (!keepView) fit();
+}
+
+function bounds(node, b) {
+  if (node.el.style.display === 'none') return b;
+  b.x1 = Math.min(b.x1, node.x); b.y1 = Math.min(b.y1, node.y);
+  b.x2 = Math.max(b.x2, node.x + node.w); b.y2 = Math.max(b.y2, node.y + node.h);
+  (node.children || []).forEach(c => bounds(c, b));
+  return b;
+}
+function fit() {
+  const b = bounds(tree, { x1: 1e9, y1: 1e9, x2: -1e9, y2: -1e9 });
+  const vw = viewport.clientWidth, vh = viewport.clientHeight;
+  const pad = 40;
+  const k = Math.min((vw - pad * 2) / (b.x2 - b.x1), (vh - pad * 2) / (b.y2 - b.y1), 1.4);
+  view.k = Math.max(k, .2);
+  view.x = (vw - (b.x2 - b.x1) * view.k) / 2 - b.x1 * view.k;
+  view.y = (vh - (b.y2 - b.y1) * view.k) / 2 - b.y1 * view.k;
+  applyView();
+}
+
+let drag = null;
+viewport.addEventListener('pointerdown', e => {
+  if (e.target.closest('.node') || e.target.closest('#controls')) return;
+  drag = { sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y };
+  viewport.classList.add('dragging');
+  viewport.setPointerCapture(e.pointerId);
+});
+viewport.addEventListener('pointermove', e => {
+  if (!drag) return;
+  view.x = drag.vx + e.clientX - drag.sx;
+  view.y = drag.vy + e.clientY - drag.sy;
+  applyView();
+});
+viewport.addEventListener('pointerup', () => { drag = null; viewport.classList.remove('dragging'); });
+viewport.addEventListener('wheel', e => {
+  e.preventDefault();
+  const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+  const nk = Math.min(2.5, Math.max(.2, view.k * factor));
+  const rect = viewport.getBoundingClientRect();
+  const px = e.clientX - rect.left, py = e.clientY - rect.top;
+  view.x = px - (px - view.x) * (nk / view.k);
+  view.y = py - (py - view.y) * (nk / view.k);
+  view.k = nk;
+  applyView();
+}, { passive: false });
+
+document.getElementById('zin').onclick = () => { view.k = Math.min(2.5, view.k * 1.2); applyView(); };
+document.getElementById('zout').onclick = () => { view.k = Math.max(.2, view.k / 1.2); applyView(); };
+document.getElementById('zfit').onclick = fit;
+window.addEventListener('resize', fit);
+
+render();
+</script>
+</body>
+</html>

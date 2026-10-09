@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://mvps-ebon.vercel.app/sitemap.xml

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Subject Line Tester — Free, by ReplyBoost</title>
+<meta name="description" content="Test your cold-email subject line for length, spam words, ALL-CAPS and emoji that hurt open rates. Free, runs in your browser." />
+<link rel="canonical" href="https://mvps-ebon.vercel.app/subject-line/" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://mvps-ebon.vercel.app/subject-line/" />
+<meta property="og:title" content="Free Subject Line Tester — by ReplyBoost" />
+<meta property="og:description" content="Score your email subject line for open rate: length, spam words, ALL-CAPS, emoji. Free, in your browser." />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Free Subject Line Tester" />
+<meta name="twitter:description" content="Score your email subject line for open rate, instantly and free." />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { brand: { 50:'#eef4ff',100:'#dbe6fe',500:'#3b62f6',600:'#2547e0',700:'#1d3ac4' } },
+    fontFamily: { sans: ['-apple-system','BlinkMacSystemFont','Segoe UI','Inter','Roboto','Helvetica Neue','Arial','sans-serif'] }
+  } } };
+</script>
+<!-- MONETIZATION — display ads (optional, zero-cost). Paste your AdSense loader & uncomment:
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXX" crossorigin="anonymous"></script>
+-->
+</head>
+<body class="bg-white text-slate-800 antialiased">
+
+<header class="sticky top-0 z-20 border-b border-slate-100 bg-white/80 backdrop-blur">
+  <div class="max-w-3xl mx-auto px-5 h-16 flex items-center justify-between">
+    <a href="../cold-email/" class="font-semibold text-[15px] tracking-tight text-slate-900">Reply<span class="text-brand-600">Boost</span></a>
+    <div class="flex items-center gap-3">
+      <select id="lang" class="text-[13px] border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-600 outline-none focus:border-brand-500"></select>
+      <a href="#waitlist" data-i="nav_cta" class="text-[13px] font-medium text-white bg-slate-900 hover:bg-slate-800 px-4 py-2 rounded-lg transition"></a>
+    </div>
+  </div>
+</header>
+
+<section class="max-w-3xl mx-auto px-5 pt-20 pb-8 text-center">
+  <div data-i="badge" class="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-500 bg-slate-50 border border-slate-200 rounded-full px-3 py-1 mb-6"></div>
+  <h1 data-i="h1" class="text-[36px] sm:text-[48px] font-bold tracking-tight leading-[1.1] text-slate-900"></h1>
+  <p data-i="sub" class="mt-5 text-lg text-slate-500 max-w-xl mx-auto leading-relaxed"></p>
+</section>
+
+<section class="max-w-3xl mx-auto px-5 pb-14">
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+    <label data-i="lbl" class="block text-sm font-medium text-slate-700 mb-1"></label>
+    <input id="subject" type="text" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none" />
+    <button id="go" data-i="btn" class="mt-4 w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white font-medium px-6 py-3 rounded-xl transition"></button>
+    <div id="result" class="mt-6 hidden">
+      <div class="flex items-center gap-4 mb-5">
+        <div id="scoreCircle" class="shrink-0 w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold"></div>
+        <div><div id="scoreLabel" class="font-semibold text-slate-900"></div><div id="metrics" class="text-[13px] text-slate-500 mt-0.5"></div></div>
+      </div>
+      <ul id="issues" class="space-y-2.5"></ul>
+    </div>
+  </div>
+  <p data-i="trust" class="text-center text-[13px] text-slate-400 mt-4"></p>
+</section>
+
+<!-- MONETIZATION (zero-cost): replace hrefs with your own affiliate links — see mvps/README.md -->
+<section class="max-w-3xl mx-auto px-5 pb-14">
+  <div class="text-center text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-3">Sponsored</div>
+  <div class="grid sm:grid-cols-2 gap-3">
+    <a href="https://REPLACE-WITH-YOUR-AFFILIATE-LINK" target="_blank" rel="sponsored noopener" class="block bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-300 hover:shadow-sm transition">
+      <div class="font-medium text-slate-900 text-sm">Cold-email sending & warmup</div>
+      <div class="text-[13px] text-slate-500 mt-0.5">Land in the inbox, not spam — automated warmup & sending.</div>
+    </a>
+    <a href="https://REPLACE-WITH-YOUR-AFFILIATE-LINK" target="_blank" rel="sponsored noopener" class="block bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-300 hover:shadow-sm transition">
+      <div class="font-medium text-slate-900 text-sm">Find verified work emails</div>
+      <div class="text-[13px] text-slate-500 mt-0.5">Look up accurate B2B contact emails in seconds.</div>
+    </a>
+  </div>
+</section>
+
+<section id="waitlist" class="bg-slate-900">
+  <div class="max-w-lg mx-auto px-5 py-16 text-center">
+    <h2 data-i="wl_h" class="text-[26px] font-bold tracking-tight text-white mb-2"></h2>
+    <p data-i="wl_sub" class="text-slate-400 mb-6 text-[15px]"></p>
+    <form id="waitlist-form" class="flex flex-col sm:flex-row gap-3 justify-center">
+      <input type="email" name="email" required data-i-ph="wl_ph" class="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white placeholder-slate-500 focus:border-brand-500 outline-none" />
+      <input type="hidden" name="mvp" value="subject-line" />
+      <button type="submit" data-i="wl_btn" class="bg-brand-600 hover:bg-brand-500 text-white font-medium px-6 py-3 rounded-xl transition whitespace-nowrap"></button>
+    </form>
+    <p id="wl_msg" class="mt-4 text-sm font-medium hidden"></p>
+  </div>
+</section>
+
+<footer class="border-t border-slate-100 py-8 text-center">
+  <div class="flex flex-wrap justify-center gap-x-5 gap-y-2 text-[13px] text-slate-500">
+    <a href="../cold-email/" class="hover:text-slate-800">ReplyBoost</a>
+    <a href="../subject-line/" class="hover:text-slate-800">Subject Tester</a>
+    <a href="../ecom-listing/" class="hover:text-slate-800">ListRank</a>
+    <a href="../realestate-listing/" class="hover:text-slate-800">RentReturn</a>
+    <a href="../proposal-rfp/" class="hover:text-slate-800">BidList</a>
+  </div>
+  <div class="text-xs text-slate-400 mt-3">100% free · runs in your browser</div>
+</footer>
+
+<script>
+  const I18N = {
+    en:{_name:"English",nav_cta:"Join waitlist",badge:"For B2B sales & founders",
+      h1:"Will this subject line get opened?",sub:"Type your subject line. We score it on length, spam words, ALL-CAPS and emoji — all in your browser.",
+      lbl:"Your email subject line",btn:"Test it",trust:"100% free · runs in your browser · nothing is uploaded",
+      wl_h:"Want a full email check?",wl_sub:"Try ReplyBoost — our free cold-email checker.",wl_ph:"Your email",wl_btn:"Join",
+      sc_good:"Strong",sc_ok:"Okay",sc_bad:"Weak",m_chars:"chars",m_words:"words",
+      all_good:"Looks great — clear and the right length.",empty:"Type a subject line first.",
+      banned:{list:["free","guarantee","act now","limited time","buy now","click","$$$","urgent","winner","cash","100%","risk-free","offer","discount"],msg:"Spam-trigger words: {x}. They can send you to spam — rephrase."},
+      too_long:"Too long ({x} chars). Aim for under ~50 — mobile inboxes cut off long subjects.",
+      too_short:"Very short ({x} chars). Add a specific, concrete hook.",
+      caps:"ALL-CAPS words look like shouting/spam — use normal case.",
+      excl:"Exclamation marks lower B2B open rates — drop them.",
+      emoji:"Emoji can hurt deliverability in cold B2B — test without it." },
+    zh:{_name:"中文",nav_cta:"加入等待名单",badge:"为 B2B 销售 & 创始人打造",
+      h1:"这条主题行会被打开吗？",sub:"输入你的邮件主题行，浏览器里即时评分：长度、垃圾词、全大写、表情符号。",
+      lbl:"你的邮件主题行",btn:"测试一下",trust:"完全免费 · 浏览器内运行 · 不上传任何内容",
+      wl_h:"想要整封邮件体检？",wl_sub:"试试 ReplyBoost——我们的免费冷邮件体检器。",wl_ph:"你的邮箱",wl_btn:"加入",
+      sc_good:"很好",sc_ok:"一般",sc_bad:"偏弱",m_chars:"字符",m_words:"词",
+      all_good:"很好——清晰且长度合适。",empty:"请先输入主题行。",
+      banned:{list:["免费","保证","马上行动","限时","立即购买","点击","紧急","中奖","现金","100%","无风险","优惠","折扣"],msg:"垃圾触发词：{x}。可能进垃圾箱——请改写。"},
+      too_long:"太长了（{x} 字符）。控制在约 50 以内——手机会截断过长主题。",
+      too_short:"太短了（{x} 字符）。加一个具体的钩子。",
+      caps:"全大写像喊叫/垃圾邮件——用正常大小写。",
+      excl:"感叹号会降低 B2B 打开率——去掉。",
+      emoji:"冷启动 B2B 里表情符号可能影响送达——先测无表情版。" },
+    es:{_name:"Español",nav_cta:"Unirse a la lista",badge:"Para ventas B2B y fundadores",
+      h1:"¿Abrirán este asunto?",sub:"Escribe tu línea de asunto. La puntuamos por longitud, palabras de spam, MAYÚSCULAS y emoji — en tu navegador.",
+      lbl:"Tu línea de asunto",btn:"Probar",trust:"100% gratis · en tu navegador · no se sube nada",
+      wl_h:"¿Quieres revisar el correo completo?",wl_sub:"Prueba ReplyBoost — nuestro chequeador de cold email gratis.",wl_ph:"Tu correo",wl_btn:"Unirse",
+      sc_good:"Fuerte",sc_ok:"Aceptable",sc_bad:"Débil",m_chars:"caracteres",m_words:"palabras",
+      all_good:"Se ve genial — claro y con buena longitud.",empty:"Escribe un asunto primero.",
+      banned:{list:["gratis","garantía","actúa ya","tiempo limitado","compra ya","clic","urgente","ganador","dinero","100%","sin riesgo","oferta","descuento"],msg:"Palabras de spam: {x}. Pueden mandarte a spam — reformula."},
+      too_long:"Demasiado largo ({x} caracteres). Bajo ~50 — el móvil corta los asuntos largos.",
+      too_short:"Muy corto ({x} caracteres). Añade un gancho concreto.",
+      caps:"MAYÚSCULAS parecen gritos/spam — usa formato normal.",
+      excl:"Los signos de exclamación bajan la apertura B2B — quítalos.",
+      emoji:"El emoji puede dañar la entrega en B2B en frío — prueba sin él." },
+  };
+  let lang=(navigator.language||"en").slice(0,2).toLowerCase(); if(!I18N[lang]) lang="en";
+  const langSel=document.getElementById('lang');
+  Object.keys(I18N).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=I18N[c]._name;langSel.appendChild(o);});
+  langSel.value=lang;
+  function apply(){const t=I18N[lang];document.documentElement.lang=lang;
+    document.querySelectorAll('[data-i]').forEach(el=>{const k=el.getAttribute('data-i');if(t[k]!=null)el.textContent=t[k];});
+    document.querySelectorAll('[data-i-ph]').forEach(el=>{const k=el.getAttribute('data-i-ph');if(t[k]!=null)el.placeholder=t[k];});}
+  langSel.addEventListener('change',()=>{lang=langSel.value;apply();document.getElementById('result').classList.add('hidden');});
+  apply();
+
+  const go=document.getElementById('go'),result=document.getElementById('result'),issuesEl=document.getElementById('issues'),
+        scoreCircle=document.getElementById('scoreCircle'),scoreLabel=document.getElementById('scoreLabel'),metricsEl=document.getElementById('metrics');
+  go.addEventListener('click',()=>{
+    const t=I18N[lang];
+    const s=document.getElementById('subject').value.trim();
+    if(!s){alert(t.empty);return;}
+    const chars=s.length;
+    const cjk=(s.match(/[一-鿿぀-ヿ가-힯]/g)||[]).length;
+    const words=cjk+((s.replace(/[一-鿿぀-ヿ가-힯]/g,' ').match(/\S+/g)||[]).length);
+    const lower=s.toLowerCase();
+    const banned=t.banned.list.filter(w=>lower.includes(w.toLowerCase()));
+    const caps=(s.match(/\b[A-Z]{3,}\b/g)||[]).length;
+    const excl=(s.match(/!|！/g)||[]).length;
+    const emoji=/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(s);
+    const issues=[];const add=(m,p)=>issues.push({m,p});
+    if(chars>60) add(t.too_long.replace("{x}",chars),18); else if(chars<15) add(t.too_short.replace("{x}",chars),15);
+    if(banned.length) add(t.banned.msg.replace("{x}",banned.slice(0,5).join(", ")),Math.min(10+banned.length*4,25));
+    if(caps>0) add(t.caps,12);
+    if(excl>0) add(t.excl,10);
+    if(emoji) add(t.emoji,8);
+    const score=Math.max(0,100-issues.reduce((a,i)=>a+i.p,0));
+    const c=score>=80?['bg-green-100','text-green-700',t.sc_good]:score>=50?['bg-amber-100','text-amber-700',t.sc_ok]:['bg-red-100','text-red-700',t.sc_bad];
+    scoreCircle.className="shrink-0 w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold "+c[0]+" "+c[1];
+    scoreCircle.textContent=score;scoreLabel.textContent=c[2];
+    metricsEl.textContent=`${chars} ${t.m_chars} · ${words} ${t.m_words}`;
+    if(!issues.length){issuesEl.innerHTML=`<li class="flex gap-2 text-[14px] text-green-700"><span>✓</span><span>${t.all_good}</span></li>`;}
+    else{issuesEl.innerHTML=issues.map(()=>`<li class="flex gap-2 text-[14px] text-slate-700"><span class="text-amber-500 shrink-0">•</span><span></span></li>`).join('');
+      [...issuesEl.querySelectorAll('li span:last-child')].forEach((sp,i)=>sp.textContent=issues[i].m);}
+    result.classList.remove('hidden');
+  });
+
+  const FORMSPREE_ENDPOINT="https://formspree.io/f/FORMSPREE_ENDPOINT";
+  const form=document.getElementById('waitlist-form'),wlMsg=document.getElementById('wl_msg');
+  form.addEventListener('submit',async ev=>{ev.preventDefault();const data=new FormData(form);data.append('lang',lang);
+    wlMsg.className="mt-4 text-sm font-medium text-slate-300";wlMsg.textContent="…";wlMsg.classList.remove('hidden');
+    try{if(FORMSPREE_ENDPOINT.includes('FORMSPREE_ENDPOINT'))throw 0;const r=await fetch(FORMSPREE_ENDPOINT,{method:'POST',body:data,headers:{Accept:'application/json'}});if(!r.ok)throw 0;
+      wlMsg.className="mt-4 text-sm font-medium text-green-400";wlMsg.textContent="✓";form.reset();}
+    catch{wlMsg.className="mt-4 text-sm font-medium text-amber-400";wlMsg.textContent="(demo: configure Formspree)";}});
+</script>
+</body>
+</html>

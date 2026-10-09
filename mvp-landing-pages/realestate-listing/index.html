@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RentReturn — Free rental property calculator</title>
+<meta name="description" content="Enter a property's numbers and instantly see monthly cash flow, cap rate and cash-on-cash return. Free, runs in your browser." />
+<link rel="canonical" href="https://mvps-ebon.vercel.app/realestate-listing/" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://mvps-ebon.vercel.app/realestate-listing/" />
+<meta property="og:title" content="RentReturn — Free rental property calculator" />
+<meta property="og:description" content="See a rental's monthly cash flow, cap rate and cash-on-cash return instantly. Free, in your browser." />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="RentReturn — Free rental property calculator" />
+<meta name="twitter:description" content="Is this rental a good deal? Cash flow, cap rate and CoC in seconds." />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { brand: { 50:'#ecfdf5',100:'#d1fae5',500:'#10b981',600:'#059669',700:'#047857' } },
+    fontFamily: { sans: ['-apple-system','BlinkMacSystemFont','Segoe UI','Inter','Roboto','Helvetica Neue','Arial','sans-serif'] }
+  } } };
+</script>
+<!-- MONETIZATION — display ads (optional, zero-cost). Paste your AdSense loader & uncomment:
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXX" crossorigin="anonymous"></script>
+-->
+</head>
+<body class="bg-white text-slate-800 antialiased">
+
+<header class="sticky top-0 z-20 border-b border-slate-100 bg-white/80 backdrop-blur">
+  <div class="max-w-3xl mx-auto px-5 h-16 flex items-center justify-between">
+    <div class="font-semibold text-[15px] tracking-tight text-slate-900">Rent<span class="text-brand-600">Return</span></div>
+    <div class="flex items-center gap-3">
+      <select id="lang" class="text-[13px] border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-600 outline-none focus:border-brand-500"></select>
+      <a href="#waitlist" data-i="nav_cta" class="text-[13px] font-medium text-white bg-slate-900 hover:bg-slate-800 px-4 py-2 rounded-lg transition"></a>
+    </div>
+  </div>
+</header>
+
+<section class="max-w-3xl mx-auto px-5 pt-20 pb-8 text-center">
+  <div data-i="badge" class="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-500 bg-slate-50 border border-slate-200 rounded-full px-3 py-1 mb-6"></div>
+  <h1 data-i="h1" class="text-[36px] sm:text-[48px] font-bold tracking-tight leading-[1.1] text-slate-900"></h1>
+  <p data-i="sub" class="mt-5 text-lg text-slate-500 max-w-xl mx-auto leading-relaxed"></p>
+</section>
+
+<section class="max-w-3xl mx-auto px-5 pb-14">
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div><label data-i="l_price" class="block text-sm font-medium text-slate-700 mb-1"></label><input id="price" type="number" value="300000" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-brand-500 outline-none" /></div>
+      <div><label data-i="l_down" class="block text-sm font-medium text-slate-700 mb-1"></label><input id="down" type="number" value="20" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-brand-500 outline-none" /></div>
+      <div><label data-i="l_rate" class="block text-sm font-medium text-slate-700 mb-1"></label><input id="rate" type="number" step="0.1" value="6.5" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-brand-500 outline-none" /></div>
+      <div><label data-i="l_years" class="block text-sm font-medium text-slate-700 mb-1"></label><input id="years" type="number" value="30" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-brand-500 outline-none" /></div>
+      <div><label data-i="l_rent" class="block text-sm font-medium text-slate-700 mb-1"></label><input id="rent" type="number" value="2200" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-brand-500 outline-none" /></div>
+      <div><label data-i="l_exp" class="block text-sm font-medium text-slate-700 mb-1"></label><input id="exp" type="number" value="500" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-brand-500 outline-none" /></div>
+    </div>
+    <button id="go" data-i="btn" class="mt-5 w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white font-medium px-6 py-3 rounded-xl transition"></button>
+
+    <div id="result" class="mt-6 hidden grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="bg-slate-50 rounded-xl p-4 border border-slate-100"><div data-i="r_pmt" class="text-[12px] text-slate-500"></div><div id="o_pmt" class="text-lg font-bold text-slate-900 mt-1"></div></div>
+      <div class="bg-slate-50 rounded-xl p-4 border border-slate-100"><div data-i="r_cf" class="text-[12px] text-slate-500"></div><div id="o_cf" class="text-lg font-bold mt-1"></div></div>
+      <div class="bg-slate-50 rounded-xl p-4 border border-slate-100"><div data-i="r_cap" class="text-[12px] text-slate-500"></div><div id="o_cap" class="text-lg font-bold text-slate-900 mt-1"></div></div>
+      <div class="bg-slate-50 rounded-xl p-4 border border-slate-100"><div data-i="r_coc" class="text-[12px] text-slate-500"></div><div id="o_coc" class="text-lg font-bold text-slate-900 mt-1"></div></div>
+    </div>
+  </div>
+  <p data-i="trust" class="text-center text-[13px] text-slate-400 mt-4"></p>
+</section>
+
+<!-- MONETIZATION (zero-cost): replace hrefs with your own affiliate links — see mvps/README.md -->
+<section class="max-w-3xl mx-auto px-5 pb-14">
+  <div class="text-center text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-3">Sponsored</div>
+  <div class="grid sm:grid-cols-2 gap-3">
+    <a href="https://REPLACE-WITH-YOUR-AFFILIATE-LINK" target="_blank" rel="sponsored noopener" class="block bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-300 hover:shadow-sm transition">
+      <div class="font-medium text-slate-900 text-sm">Find off-market deals</div>
+      <div class="text-[13px] text-slate-500 mt-0.5">Source under-priced rentals before they hit the market.</div>
+    </a>
+    <a href="https://REPLACE-WITH-YOUR-AFFILIATE-LINK" target="_blank" rel="sponsored noopener" class="block bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-300 hover:shadow-sm transition">
+      <div class="font-medium text-slate-900 text-sm">Landlord & rent tracking</div>
+      <div class="text-[13px] text-slate-500 mt-0.5">Automate rent, expenses and tax reporting.</div>
+    </a>
+  </div>
+</section>
+
+<section id="waitlist" class="bg-slate-900">
+  <div class="max-w-lg mx-auto px-5 py-16 text-center">
+    <h2 data-i="wl_h" class="text-[26px] font-bold tracking-tight text-white mb-2"></h2>
+    <p data-i="wl_sub" class="text-slate-400 mb-6 text-[15px]"></p>
+    <form id="waitlist-form" class="flex flex-col sm:flex-row gap-3 justify-center">
+      <input type="email" name="email" required data-i-ph="wl_ph" class="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white placeholder-slate-500 focus:border-brand-500 outline-none" />
+      <input type="hidden" name="mvp" value="realestate-calc" />
+      <button type="submit" data-i="wl_btn" class="bg-brand-600 hover:bg-brand-500 text-white font-medium px-6 py-3 rounded-xl transition whitespace-nowrap"></button>
+    </form>
+    <p id="wl_msg" class="mt-4 text-sm font-medium hidden"></p>
+  </div>
+</section>
+
+<footer class="border-t border-slate-100 py-8 text-center">
+  <div class="flex flex-wrap justify-center gap-x-5 gap-y-2 text-[13px] text-slate-500">
+    <a href="../cold-email/" class="hover:text-slate-800">ReplyBoost</a>
+    <a href="../subject-line/" class="hover:text-slate-800">Subject Tester</a>
+    <a href="../ecom-listing/" class="hover:text-slate-800">ListRank</a>
+    <a href="../realestate-listing/" class="hover:text-slate-800">RentReturn</a>
+    <a href="../proposal-rfp/" class="hover:text-slate-800">BidList</a>
+  </div>
+  <div class="text-xs text-slate-400 mt-3">100% free · estimates only, not financial advice</div>
+</footer>
+
+<script>
+  const I18N = {
+    en:{_name:"English",nav_cta:"Join waitlist",badge:"For real-estate investors & agents",
+      h1:"Is this rental a good deal?",sub:"Enter the numbers and see cash flow, cap rate and cash-on-cash return instantly — right in your browser.",
+      l_price:"Purchase price",l_down:"Down payment (%)",l_rate:"Interest rate (%)",l_years:"Loan term (years)",l_rent:"Monthly rent",l_exp:"Monthly expenses (tax, insurance, mgmt)",
+      btn:"Calculate",trust:"100% free · runs in your browser · estimates only",
+      wl_h:"Want a full deal report?",wl_sub:"Join the waitlist for printable analysis and comparisons.",wl_ph:"Your email",wl_btn:"Join",
+      r_pmt:"Monthly payment",r_cf:"Monthly cash flow",r_cap:"Cap rate",r_coc:"Cash-on-cash"},
+    zh:{_name:"中文",nav_cta:"加入等待名单",badge:"为房产投资者 & 经纪人打造",
+      h1:"这套出租房划算吗？",sub:"填入数字，浏览器里即时算出现金流、Cap Rate 和现金回报率。",
+      l_price:"购买价",l_down:"首付（%）",l_rate:"利率（%）",l_years:"贷款年限",l_rent:"月租金",l_exp:"月支出（税、保险、管理）",
+      btn:"计算",trust:"完全免费 · 浏览器内运行 · 仅为估算",
+      wl_h:"想要完整投资报告？",wl_sub:"加入等待名单，第一时间用上可打印分析与对比。",wl_ph:"你的邮箱",wl_btn:"加入",
+      r_pmt:"月供",r_cf:"月现金流",r_cap:"Cap Rate",r_coc:"现金回报率"},
+    es:{_name:"Español",nav_cta:"Unirse a la lista",badge:"Para inversores y agentes inmobiliarios",
+      h1:"¿Es buena inversión este alquiler?",sub:"Introduce los números y ve el flujo de caja, el cap rate y el retorno cash-on-cash al instante.",
+      l_price:"Precio de compra",l_down:"Entrada (%)",l_rate:"Tasa de interés (%)",l_years:"Plazo (años)",l_rent:"Renta mensual",l_exp:"Gastos mensuales (impuestos, seguro, gestión)",
+      btn:"Calcular",trust:"100% gratis · en tu navegador · solo estimaciones",
+      wl_h:"¿Quieres un informe completo?",wl_sub:"Únete a la lista para análisis imprimible y comparativas.",wl_ph:"Tu correo",wl_btn:"Unirse",
+      r_pmt:"Cuota mensual",r_cf:"Flujo mensual",r_cap:"Cap rate",r_coc:"Cash-on-cash"},
+  };
+  let lang=(navigator.language||"en").slice(0,2).toLowerCase(); if(!I18N[lang]) lang="en";
+  const langSel=document.getElementById('lang');
+  Object.keys(I18N).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=I18N[c]._name;langSel.appendChild(o);});
+  langSel.value=lang;
+  function apply(){const t=I18N[lang];document.documentElement.lang=lang;
+    document.querySelectorAll('[data-i]').forEach(el=>{const k=el.getAttribute('data-i');if(t[k]!=null)el.textContent=t[k];});
+    document.querySelectorAll('[data-i-ph]').forEach(el=>{const k=el.getAttribute('data-i-ph');if(t[k]!=null)el.placeholder=t[k];});}
+  langSel.addEventListener('change',()=>{lang=langSel.value;apply();});
+  apply();
+
+  const fmt=n=>(isFinite(n)?n:0).toLocaleString(undefined,{maximumFractionDigits:0});
+  document.getElementById('go').addEventListener('click',()=>{
+    const v=id=>parseFloat(document.getElementById(id).value)||0;
+    const price=v('price'),downPct=v('down'),rate=v('rate'),years=v('years'),rent=v('rent'),exp=v('exp');
+    const loan=price*(1-downPct/100), mr=rate/100/12, n=years*12;
+    const pmt = mr>0 ? loan*mr/(1-Math.pow(1+mr,-n)) : (n>0?loan/n:0);
+    const cashInvested=price*downPct/100;
+    const monthlyCF=rent-exp-pmt;
+    const capRate=price>0 ? ((rent-exp)*12/price*100) : 0;
+    const coc=cashInvested>0 ? (monthlyCF*12/cashInvested*100) : 0;
+    document.getElementById('o_pmt').textContent=fmt(pmt);
+    const cfEl=document.getElementById('o_cf'); cfEl.textContent=fmt(monthlyCF);
+    cfEl.className="text-lg font-bold mt-1 "+(monthlyCF>=0?"text-green-600":"text-red-600");
+    document.getElementById('o_cap').textContent=capRate.toFixed(1)+"%";
+    document.getElementById('o_coc').textContent=coc.toFixed(1)+"%";
+    document.getElementById('result').classList.remove('hidden');
+  });
+
+  const FORMSPREE_ENDPOINT="https://formspree.io/f/FORMSPREE_ENDPOINT";
+  const form=document.getElementById('waitlist-form'),wlMsg=document.getElementById('wl_msg');
+  form.addEventListener('submit',async ev=>{ev.preventDefault();const data=new FormData(form);data.append('lang',lang);
+    wlMsg.className="mt-4 text-sm font-medium text-slate-300";wlMsg.textContent="…";wlMsg.classList.remove('hidden');
+    try{if(FORMSPREE_ENDPOINT.includes('FORMSPREE_ENDPOINT'))throw 0;const r=await fetch(FORMSPREE_ENDPOINT,{method:'POST',body:data,headers:{Accept:'application/json'}});if(!r.ok)throw 0;
+      wlMsg.className="mt-4 text-sm font-medium text-green-400";wlMsg.textContent="✓";form.reset();}
+    catch{wlMsg.className="mt-4 text-sm font-medium text-amber-400";wlMsg.textContent="(demo: configure Formspree)";}});
+</script>
+</body>
+</html>

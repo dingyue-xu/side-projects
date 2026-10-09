@@ -1,0 +1,8 @@
+{
+  "startingCapital": 390000,
+  "baseDemand": 1.45,
+  "heatDecayPerDay": 0.55,
+  "peacefulDayChance": 0.47,
+  "variableCostPerSession": 50,
+  "rentCreepPerWeek": 0.028
+}

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ReplyBoost — Free cold email checker</title>
+<meta name="description" content="Paste your cold email and instantly see what's hurting your reply rate: spam words, length, links, missing call-to-action. 100% free, runs in your browser." />
+<link rel="canonical" href="https://mvps-ebon.vercel.app/cold-email/" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://mvps-ebon.vercel.app/cold-email/" />
+<meta property="og:title" content="ReplyBoost — Free cold email checker" />
+<meta property="og:description" content="Paste your cold email and instantly see what's hurting your reply rate — spam words, length, links, missing CTA. Free, in your browser." />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="ReplyBoost — Free cold email checker" />
+<meta name="twitter:description" content="See what's hurting your cold email's reply rate, instantly and free." />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { brand: { 50:'#eef4ff',100:'#dbe6fe',500:'#3b62f6',600:'#2547e0',700:'#1d3ac4' } },
+    fontFamily: { sans: ['-apple-system','BlinkMacSystemFont','Segoe UI','Inter','Roboto','Helvetica Neue','Arial','sans-serif'] }
+  } } };
+</script>
+<!-- MONETIZATION — display ads (optional, zero-cost). Paste your AdSense loader & uncomment:
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXX" crossorigin="anonymous"></script>
+-->
+</head>
+<body class="bg-white text-slate-800 antialiased">
+
+<header class="sticky top-0 z-20 border-b border-slate-100 bg-white/80 backdrop-blur">
+  <div class="max-w-3xl mx-auto px-5 h-16 flex items-center justify-between">
+    <div class="font-semibold text-[15px] tracking-tight text-slate-900">Reply<span class="text-brand-600">Boost</span></div>
+    <div class="flex items-center gap-3">
+      <select id="lang" class="text-[13px] border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-600 outline-none focus:border-brand-500"></select>
+      <a href="#waitlist" data-i="nav_cta" class="text-[13px] font-medium text-white bg-slate-900 hover:bg-slate-800 px-4 py-2 rounded-lg transition"></a>
+    </div>
+  </div>
+</header>
+
+<section class="max-w-3xl mx-auto px-5 pt-20 pb-8 text-center">
+  <div data-i="badge" class="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-500 bg-slate-50 border border-slate-200 rounded-full px-3 py-1 mb-6"></div>
+  <h1 data-i="h1" class="text-[36px] sm:text-[48px] font-bold tracking-tight leading-[1.1] text-slate-900"></h1>
+  <p data-i="sub" class="mt-5 text-lg text-slate-500 max-w-xl mx-auto leading-relaxed"></p>
+</section>
+
+<section class="max-w-3xl mx-auto px-5 pb-14">
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+    <label data-i="lbl_email" class="block text-sm font-medium text-slate-700 mb-1"></label>
+    <textarea id="email" rows="8" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none resize-y"></textarea>
+    <button id="go" data-i="btn" class="mt-4 w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white font-medium px-6 py-3 rounded-xl transition"></button>
+
+    <div id="result" class="mt-6 hidden">
+      <div class="flex items-center gap-4 mb-5">
+        <div id="scoreCircle" class="shrink-0 w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold"></div>
+        <div>
+          <div id="scoreLabel" class="font-semibold text-slate-900"></div>
+          <div id="metrics" class="text-[13px] text-slate-500 mt-0.5"></div>
+        </div>
+      </div>
+      <ul id="issues" class="space-y-2.5"></ul>
+    </div>
+  </div>
+  <p data-i="trust" class="text-center text-[13px] text-slate-400 mt-4"></p>
+</section>
+
+<!-- MONETIZATION (zero-cost): replace hrefs with your own affiliate links — see mvps/README.md -->
+<section class="max-w-3xl mx-auto px-5 pb-14">
+  <div class="text-center text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-3">Sponsored</div>
+  <div class="grid sm:grid-cols-2 gap-3">
+    <a href="https://REPLACE-WITH-YOUR-AFFILIATE-LINK" target="_blank" rel="sponsored noopener" class="block bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-300 hover:shadow-sm transition">
+      <div class="font-medium text-slate-900 text-sm">Cold-email sending & warmup</div>
+      <div class="text-[13px] text-slate-500 mt-0.5">Land in the inbox, not spam — automated warmup & sending.</div>
+    </a>
+    <a href="https://REPLACE-WITH-YOUR-AFFILIATE-LINK" target="_blank" rel="sponsored noopener" class="block bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-300 hover:shadow-sm transition">
+      <div class="font-medium text-slate-900 text-sm">Find verified work emails</div>
+      <div class="text-[13px] text-slate-500 mt-0.5">Look up accurate B2B contact emails in seconds.</div>
+    </a>
+  </div>
+</section>
+
+<section id="waitlist" class="bg-slate-900">
+  <div class="max-w-lg mx-auto px-5 py-16 text-center">
+    <h2 data-i="wl_h" class="text-[26px] font-bold tracking-tight text-white mb-2"></h2>
+    <p data-i="wl_sub" class="text-slate-400 mb-6 text-[15px]"></p>
+    <form id="waitlist-form" class="flex flex-col sm:flex-row gap-3 justify-center">
+      <input type="email" name="email" required data-i-ph="wl_ph" class="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white placeholder-slate-500 focus:border-brand-500 outline-none" />
+      <input type="hidden" name="mvp" value="cold-email" />
+      <button type="submit" data-i="wl_btn" class="bg-brand-600 hover:bg-brand-500 text-white font-medium px-6 py-3 rounded-xl transition whitespace-nowrap"></button>
+    </form>
+    <p id="wl_msg" class="mt-4 text-sm font-medium hidden"></p>
+  </div>
+</section>
+
+<footer class="border-t border-slate-100 py-8 text-center">
+  <div class="flex flex-wrap justify-center gap-x-5 gap-y-2 text-[13px] text-slate-500">
+    <a href="../cold-email/" class="hover:text-slate-800">ReplyBoost</a>
+    <a href="../subject-line/" class="hover:text-slate-800">Subject Tester</a>
+    <a href="../ecom-listing/" class="hover:text-slate-800">ListRank</a>
+    <a href="../realestate-listing/" class="hover:text-slate-800">RentReturn</a>
+    <a href="../proposal-rfp/" class="hover:text-slate-800">BidList</a>
+  </div>
+  <div class="text-xs text-slate-400 mt-3">100% free · runs in your browser</div>
+</footer>
+
+<script>
+  // ───────────── i18n (add a language by copying a block; spam list is per-language) ─────────────
+  const I18N = {
+    en: {
+      _name: "English", nav_cta: "Join waitlist", badge: "For B2B sales & founders",
+      h1: "Why isn't your cold email getting replies?",
+      sub: "Paste it below. We instantly flag spam words, length, links, and a missing ask — all in your browser, nothing sent anywhere.",
+      lbl_email: "Paste your cold email", btn: "Check my email",
+      trust: "100% free · runs entirely in your browser · your text never leaves your device",
+      wl_h: "Want the auto-fix version?", wl_sub: "Join the waitlist for one-click rewrite suggestions.",
+      wl_ph: "Your email", wl_btn: "Join",
+      sc_good: "Looks strong", sc_ok: "Could be better", sc_bad: "Needs work",
+      m_words: "words", m_links: "links",
+      all_good: "Nice — no major issues found. Personalize the first line and send.",
+      empty: "Paste an email first.",
+      spam: { list: ["free","guarantee","click here","buy now","limited time","act now","risk-free","100%","cash","cheap","offer","discount","urgent","winner","congratulations","$$$","earn money","no obligation","best price","order now"],
+        msg: "Spam-trigger words found: {x}. These hurt deliverability — rephrase or remove." },
+      too_long: "Too long ({x} words). Cold emails under ~125 words get more replies — cut it down.",
+      too_short: "Very short ({x} words). Add one specific reason you're reaching out.",
+      links: "{x} links. Multiple links look promotional and can trip spam filters — keep to one at most.",
+      no_cta: "No clear ask. End with one specific, low-friction question (e.g. “Worth a 15-min call Thursday?”).",
+      shouting: "Too many exclamation marks / ALL-CAPS. It reads as salesy — tone it down.",
+      generic: "Generic greeting (“Dear Sir/Madam”). Use the person's name and a specific opener.",
+      greet: /dear sir|to whom it may concern|dear madam|hello there/i,
+    },
+    zh: {
+      _name: "中文", nav_cta: "加入等待名单", badge: "为 B2B 销售 & 创始人打造",
+      h1: "你的冷邮件为什么没人回？",
+      sub: "粘进下面，立刻标出垃圾词、长度、链接和缺失的明确请求——全在你浏览器里跑，不上传任何地方。",
+      lbl_email: "粘贴你的冷邮件", btn: "体检我的邮件",
+      trust: "完全免费 · 全程在浏览器运行 · 你的文字不离开本机",
+      wl_h: "想要一键自动改写版？", wl_sub: "加入等待名单，第一时间用上一键改写建议。",
+      wl_ph: "你的邮箱", wl_btn: "加入",
+      sc_good: "表现不错", sc_ok: "还能更好", sc_bad: "需要改进",
+      m_words: "词", m_links: "个链接",
+      all_good: "不错——没发现大问题。把第一句个性化一下就可以发了。",
+      empty: "请先粘贴一封邮件。",
+      spam: { list: ["免费","保证","点击这里","立即购买","限时","马上行动","无风险","100%","现金","便宜","优惠","折扣","紧急","中奖","恭喜","赚钱","无义务","最低价","立即下单"],
+        msg: "发现垃圾触发词：{x}。会影响送达率——请改写或删除。" },
+      too_long: "太长了（{x} 词）。冷邮件控制在约 125 词以内回复更高——精简一下。",
+      too_short: "太短了（{x} 词）。补一个你联系对方的具体理由。",
+      links: "{x} 个链接。多链接显得像广告、易触发垃圾过滤——最多留一个。",
+      no_cta: "没有明确请求。结尾给一个具体、低门槛的提问（例如“周四聊 15 分钟方便吗？”）。",
+      shouting: "感叹号/全大写过多。读起来太营销腔——收一收。",
+      generic: "通用称呼（“尊敬的先生”）。用对方名字 + 具体开场。",
+      greet: /尊敬的先生|敬启者|尊敬的女士|您好[，,]?\s*$/i,
+    },
+    es: {
+      _name: "Español", nav_cta: "Unirse a la lista", badge: "Para ventas B2B y fundadores",
+      h1: "¿Por qué tu correo en frío no recibe respuesta?",
+      sub: "Pégalo abajo. Marcamos al instante palabras de spam, longitud, enlaces y la falta de una petición clara — todo en tu navegador.",
+      lbl_email: "Pega tu correo en frío", btn: "Revisar mi correo",
+      trust: "100% gratis · funciona en tu navegador · tu texto nunca sale de tu dispositivo",
+      wl_h: "¿Quieres la versión con reescritura automática?", wl_sub: "Únete a la lista para las sugerencias de reescritura en un clic.",
+      wl_ph: "Tu correo", wl_btn: "Unirse",
+      sc_good: "Se ve bien", sc_ok: "Podría mejorar", sc_bad: "Necesita trabajo",
+      m_words: "palabras", m_links: "enlaces",
+      all_good: "Bien — sin problemas importantes. Personaliza la primera línea y envía.",
+      empty: "Pega un correo primero.",
+      spam: { list: ["gratis","garantía","haz clic aquí","compra ya","tiempo limitado","actúa ahora","sin riesgo","100%","dinero","barato","oferta","descuento","urgente","ganador","felicidades","gana dinero","sin compromiso","mejor precio"],
+        msg: "Palabras de spam encontradas: {x}. Afectan la entregabilidad — reformula o elimina." },
+      too_long: "Demasiado largo ({x} palabras). Bajo ~125 palabras recibe más respuestas — recórtalo.",
+      too_short: "Muy corto ({x} palabras). Añade una razón concreta para escribir.",
+      links: "{x} enlaces. Varios enlaces parecen promocionales y activan filtros de spam — deja uno como máximo.",
+      no_cta: "Sin petición clara. Termina con una pregunta concreta y de baja fricción.",
+      shouting: "Demasiados signos de exclamación / MAYÚSCULAS. Suena a venta — modéralo.",
+      generic: "Saludo genérico. Usa el nombre de la persona y una apertura concreta.",
+      greet: /estimado señor|a quien corresponda|estimada señora/i,
+    },
+    pt: {
+      _name:"Português", nav_cta:"Entrar na lista", badge:"Para vendas B2B e fundadores",
+      h1:"Por que seu cold email não recebe resposta?",
+      sub:"Cole abaixo. Sinalizamos palavras de spam, tamanho, links e a falta de um pedido claro — tudo no seu navegador.",
+      lbl_email:"Cole seu cold email", btn:"Verificar meu email",
+      trust:"100% grátis · roda no seu navegador · seu texto nunca sai do dispositivo",
+      wl_h:"Quer a versão com correção automática?", wl_sub:"Entre na lista para sugestões de reescrita em um clique.",
+      wl_ph:"Seu email", wl_btn:"Entrar",
+      sc_good:"Parece forte", sc_ok:"Pode melhorar", sc_bad:"Precisa de ajustes",
+      m_words:"palavras", m_links:"links",
+      all_good:"Ótimo — sem problemas grandes. Personalize a primeira linha e envie.",
+      empty:"Cole um email primeiro.",
+      spam:{ list:["grátis","garantia","clique aqui","compre já","tempo limitado","aja agora","sem risco","100%","dinheiro","barato","oferta","desconto","urgente","ganhe dinheiro"],
+        msg:"Palavras de spam encontradas: {x}. Prejudicam a entrega — reescreva ou remova." },
+      too_long:"Muito longo ({x} palavras). Abaixo de ~125 recebe mais respostas — reduza.",
+      too_short:"Muito curto ({x} palavras). Adicione um motivo concreto para o contato.",
+      links:"{x} links. Vários links parecem promoção e ativam filtros de spam — deixe no máximo um.",
+      no_cta:"Sem pedido claro. Termine com uma pergunta específica e de baixo atrito.",
+      shouting:"Pontos de exclamação / MAIÚSCULAS demais. Soa como venda — modere.",
+      generic:"Saudação genérica. Use o nome da pessoa e uma abertura específica.",
+      greet:/prezado senhor|a quem possa interessar|prezada senhora/i,
+    },
+    de: {
+      _name:"Deutsch", nav_cta:"Warteliste", badge:"Für B2B-Vertrieb & Gründer",
+      h1:"Warum bekommt deine Kaltakquise-Mail keine Antwort?",
+      sub:"Füge sie unten ein. Wir markieren Spam-Wörter, Länge, Links und eine fehlende klare Bitte — alles in deinem Browser.",
+      lbl_email:"Füge deine Kaltakquise-Mail ein", btn:"Mail prüfen",
+      trust:"100% kostenlos · läuft im Browser · dein Text verlässt nie dein Gerät",
+      wl_h:"Willst du die Auto-Korrektur-Version?", wl_sub:"Trag dich ein für Umschreib-Vorschläge per Klick.",
+      wl_ph:"Deine E-Mail", wl_btn:"Beitreten",
+      sc_good:"Sieht stark aus", sc_ok:"Geht besser", sc_bad:"Braucht Arbeit",
+      m_words:"Wörter", m_links:"Links",
+      all_good:"Gut — keine großen Probleme. Personalisiere die erste Zeile und sende.",
+      empty:"Bitte zuerst eine Mail einfügen.",
+      spam:{ list:["kostenlos","garantie","hier klicken","jetzt kaufen","begrenzt","jetzt handeln","risikofrei","100%","geld","billig","angebot","rabatt","dringend","gewinn"],
+        msg:"Spam-Wörter gefunden: {x}. Sie schaden der Zustellbarkeit — umformulieren oder entfernen." },
+      too_long:"Zu lang ({x} Wörter). Unter ~125 Wörtern gibt es mehr Antworten — kürzen.",
+      too_short:"Sehr kurz ({x} Wörter). Nenne einen konkreten Grund für deine Kontaktaufnahme.",
+      links:"{x} Links. Mehrere Links wirken werblich und lösen Spamfilter aus — höchstens einen.",
+      no_cta:"Keine klare Bitte. Schließe mit einer konkreten, einfachen Frage.",
+      shouting:"Zu viele Ausrufezeichen / GROSSBUCHSTABEN. Klingt verkäuferisch — reduzieren.",
+      generic:"Generische Anrede. Nutze den Namen der Person und einen konkreten Einstieg.",
+      greet:/sehr geehrte damen und herren|sehr geehrter herr|sehr geehrte frau/i,
+    },
+    ja: {
+      _name:"日本語", nav_cta:"登録する", badge:"B2B営業・創業者向け",
+      h1:"コールドメールの返信が来ないのはなぜ？",
+      sub:"下に貼り付けてください。スパム語・長さ・リンク・明確な依頼の欠如を即座に指摘します。すべてブラウザ内で動作。",
+      lbl_email:"コールドメールを貼り付け", btn:"メールを診断",
+      trust:"完全無料 · ブラウザ内で動作 · 入力は端末から外に出ません",
+      wl_h:"自動リライト版が欲しい？", wl_sub:"ワンクリックの改善提案を、登録して先行入手。",
+      wl_ph:"メールアドレス", wl_btn:"登録",
+      sc_good:"良好", sc_ok:"改善の余地あり", sc_bad:"要改善",
+      m_words:"語", m_links:"リンク",
+      all_good:"良いですね — 大きな問題はありません。冒頭を個別化して送信しましょう。",
+      empty:"先にメールを貼り付けてください。",
+      spam:{ list:["無料","保証","今すぐクリック","今すぐ購入","期間限定","今すぐ行動","リスクなし","100%","現金","激安","お得","割引","緊急","当選","稼ぐ"],
+        msg:"スパム判定されやすい語：{x}。到達率を下げます — 言い換えるか削除を。" },
+      too_long:"長すぎます（{x}語）。約125語以内の方が返信が増えます — 短縮を。",
+      too_short:"短すぎます（{x}語）。連絡した具体的な理由を一つ加えましょう。",
+      links:"リンクが{x}個。複数リンクは宣伝に見え、スパム判定の原因に — 多くても1つに。",
+      no_cta:"明確な依頼がありません。具体的で答えやすい質問で締めましょう。",
+      shouting:"感嘆符・大文字が多すぎます。売り込み臭が強い — 抑えましょう。",
+      generic:"汎用的な書き出しです。相手の名前と具体的な一文で始めましょう。",
+      greet:/拝啓|ご担当者様|関係者各位/,
+    },
+    ar: {
+      _name:"العربية", nav_cta:"انضم للقائمة", badge:"لمبيعات B2B والمؤسسين",
+      h1:"لماذا لا يحصل بريدك البارد على رد؟",
+      sub:"الصقه في الأسفل. نرصد فوراً كلمات السبام والطول والروابط وغياب طلب واضح — كل ذلك داخل متصفحك.",
+      lbl_email:"الصق بريدك البارد", btn:"افحص بريدي",
+      trust:"مجاني 100% · يعمل داخل متصفحك · نصك لا يغادر جهازك",
+      wl_h:"تريد نسخة التصحيح التلقائي؟", wl_sub:"انضم للقائمة للحصول على اقتراحات إعادة الصياغة بنقرة.",
+      wl_ph:"بريدك الإلكتروني", wl_btn:"انضم",
+      sc_good:"يبدو قوياً", sc_ok:"يمكن تحسينه", sc_bad:"يحتاج عملاً",
+      m_words:"كلمة", m_links:"روابط",
+      all_good:"جيد — لا مشاكل كبيرة. خصّص السطر الأول وأرسل.",
+      empty:"الصق بريداً أولاً.",
+      spam:{ list:["مجاني","ضمان","انقر هنا","اشترِ الآن","لفترة محدودة","تصرف الآن","بدون مخاطر","100%","نقد","رخيص","عرض","خصم","عاجل","اربح المال"],
+        msg:"كلمات سبام موجودة: {x}. تضر بوصول البريد — أعد صياغتها أو احذفها." },
+      too_long:"طويل جداً ({x} كلمة). أقل من ~125 كلمة يحصل على ردود أكثر — اختصر.",
+      too_short:"قصير جداً ({x} كلمة). أضف سبباً محدداً للتواصل.",
+      links:"{x} روابط. الروابط المتعددة تبدو دعائية وتُطلق مرشحات السبام — رابط واحد كحد أقصى.",
+      no_cta:"لا يوجد طلب واضح. اختم بسؤال محدد وسهل.",
+      shouting:"علامات تعجب / أحرف كبيرة كثيرة. يبدو بيعياً — خفّف.",
+      generic:"تحية عامة. استخدم اسم الشخص وافتتاحية محددة.",
+      greet:/إلى من يهمه الأمر|عزيزي السيد|سيدي العزيز/,
+    },
+  };
+
+  let lang = (navigator.language || "en").slice(0, 2).toLowerCase();
+  if (!I18N[lang]) lang = "en";
+  const langSel = document.getElementById('lang');
+  Object.keys(I18N).forEach(code => { const o = document.createElement('option'); o.value = code; o.textContent = I18N[code]._name; langSel.appendChild(o); });
+  langSel.value = lang;
+
+  function apply() {
+    const t = I18N[lang];
+    document.documentElement.lang = lang;
+    document.documentElement.dir = (lang === 'ar' ? 'rtl' : 'ltr');
+    document.querySelectorAll('[data-i]').forEach(el => { const k = el.getAttribute('data-i'); if (t[k] != null) el.textContent = t[k]; });
+    document.querySelectorAll('[data-i-ph]').forEach(el => { const k = el.getAttribute('data-i-ph'); if (t[k] != null) el.placeholder = t[k]; });
+  }
+  langSel.addEventListener('change', () => { lang = langSel.value; apply(); document.getElementById('result').classList.add('hidden'); });
+  apply();
+
+  // ───────────── analyzer (pure client-side; zero cost) ─────────────
+  const go = document.getElementById('go'), result = document.getElementById('result'),
+        issuesEl = document.getElementById('issues'), scoreCircle = document.getElementById('scoreCircle'),
+        scoreLabel = document.getElementById('scoreLabel'), metricsEl = document.getElementById('metrics');
+
+  function analyze(text, t) {
+    // CJK (Chinese/Japanese/Korean) has no spaces — count characters; otherwise count words.
+    const cjk = (text.match(/[一-鿿぀-ヿ가-힯]/g) || []).length;
+    const nonCjk = (text.replace(/[一-鿿぀-ヿ가-힯]/g, ' ').match(/\S+/g) || []).length;
+    const words = cjk + nonCjk;
+    const links = (text.match(/https?:\/\//gi) || []).length;
+    const exclaim = (text.match(/!|！/g) || []).length;
+    const capsWords = (text.match(/\b[A-Z]{3,}\b/g) || []).length;
+    const hasQuestion = /\?|？/.test(text);
+    const lower = text.toLowerCase();
+    const foundSpam = t.spam.list.filter(w => lower.includes(w.toLowerCase()));
+    const generic = t.greet.test(text);
+
+    const issues = [];
+    const add = (msg, penalty) => issues.push({ msg, penalty });
+    if (words > 150) add(t.too_long.replace("{x}", words), 18);
+    else if (words > 0 && words < 20) add(t.too_short.replace("{x}", words), 15);
+    if (foundSpam.length) add(t.spam.msg.replace("{x}", foundSpam.slice(0, 6).join(", ")), Math.min(10 + foundSpam.length * 3, 25));
+    if (links > 2) add(t.links.replace("{x}", links), 12);
+    if (!hasQuestion) add(t.no_cta, 18);
+    if (exclaim > 1 || capsWords > 1) add(t.shouting, 10);
+    if (generic) add(t.generic, 10);
+
+    const score = Math.max(0, 100 - issues.reduce((s, i) => s + i.penalty, 0));
+    return { words, links, score, issues };
+  }
+
+  go.addEventListener('click', () => {
+    const t = I18N[lang];
+    const text = document.getElementById('email').value;
+    if (!text.trim()) { alert(t.empty); return; }
+    const r = analyze(text, t);
+
+    const color = r.score >= 80 ? ['bg-green-100','text-green-700', t.sc_good]
+                : r.score >= 50 ? ['bg-amber-100','text-amber-700', t.sc_ok]
+                : ['bg-red-100','text-red-700', t.sc_bad];
+    scoreCircle.className = "shrink-0 w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold " + color[0] + " " + color[1];
+    scoreCircle.textContent = r.score;
+    scoreLabel.textContent = color[2];
+    metricsEl.textContent = `${r.words} ${t.m_words} · ${r.links} ${t.m_links}`;
+
+    if (r.issues.length === 0) {
+      issuesEl.innerHTML = `<li class="flex gap-2 text-[14px] text-green-700"><span>✓</span><span>${t.all_good}</span></li>`;
+    } else {
+      issuesEl.innerHTML = r.issues.map(i =>
+        `<li class="flex gap-2 text-[14px] text-slate-700"><span class="text-amber-500 shrink-0">•</span><span></span></li>`).join('');
+      [...issuesEl.querySelectorAll('li span:last-child')].forEach((s, idx) => s.textContent = r.issues[idx].msg);
+    }
+    result.classList.remove('hidden');
+  });
+
+  // ───────────── waitlist (configure FORMSPREE_ENDPOINT) ─────────────
+  const FORMSPREE_ENDPOINT = "https://formspree.io/f/FORMSPREE_ENDPOINT";
+  const form = document.getElementById('waitlist-form'), wlMsg = document.getElementById('wl_msg');
+  form.addEventListener('submit', async ev => {
+    ev.preventDefault(); const t = I18N[lang]; const data = new FormData(form); data.append('lang', lang);
+    wlMsg.className = "mt-4 text-sm font-medium text-slate-300"; wlMsg.textContent = "…"; wlMsg.classList.remove('hidden');
+    try {
+      if (FORMSPREE_ENDPOINT.includes('FORMSPREE_ENDPOINT')) throw 0;
+      const r = await fetch(FORMSPREE_ENDPOINT, { method: 'POST', body: data, headers: { Accept: 'application/json' } });
+      if (!r.ok) throw 0;
+      wlMsg.className = "mt-4 text-sm font-medium text-green-400"; wlMsg.textContent = "✓"; form.reset();
+    } catch { wlMsg.className = "mt-4 text-sm font-medium text-amber-400"; wlMsg.textContent = "(demo: configure Formspree)"; }
+  });
+</script>
+</body>
+</html>

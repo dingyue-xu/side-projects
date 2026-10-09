@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ListRank — Free product listing checker</title>
+<meta name="description" content="Paste your product title and bullets and instantly see what's hurting conversion: title length, bullet count, banned words, missing specs. Free, runs in your browser." />
+<link rel="canonical" href="https://mvps-ebon.vercel.app/ecom-listing/" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://mvps-ebon.vercel.app/ecom-listing/" />
+<meta property="og:title" content="ListRank — Free product listing checker" />
+<meta property="og:description" content="Check your product title and bullets for length, missing specs, banned words and weak bullets. Free, in your browser." />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="ListRank — Free product listing checker" />
+<meta name="twitter:description" content="See what's hurting your listing's conversion, instantly and free." />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { brand: { 50:'#fff7ed',100:'#ffedd5',500:'#f97316',600:'#ea580c',700:'#c2410c' } },
+    fontFamily: { sans: ['-apple-system','BlinkMacSystemFont','Segoe UI','Inter','Roboto','Helvetica Neue','Arial','sans-serif'] }
+  } } };
+</script>
+<!-- MONETIZATION — display ads (optional, zero-cost). Paste your AdSense loader & uncomment:
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXX" crossorigin="anonymous"></script>
+-->
+</head>
+<body class="bg-white text-slate-800 antialiased">
+
+<header class="sticky top-0 z-20 border-b border-slate-100 bg-white/80 backdrop-blur">
+  <div class="max-w-3xl mx-auto px-5 h-16 flex items-center justify-between">
+    <div class="font-semibold text-[15px] tracking-tight text-slate-900">List<span class="text-brand-600">Rank</span></div>
+    <div class="flex items-center gap-3">
+      <select id="lang" class="text-[13px] border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-600 outline-none focus:border-brand-500"></select>
+      <a href="#waitlist" data-i="nav_cta" class="text-[13px] font-medium text-white bg-slate-900 hover:bg-slate-800 px-4 py-2 rounded-lg transition"></a>
+    </div>
+  </div>
+</header>
+
+<section class="max-w-3xl mx-auto px-5 pt-20 pb-8 text-center">
+  <div data-i="badge" class="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-500 bg-slate-50 border border-slate-200 rounded-full px-3 py-1 mb-6"></div>
+  <h1 data-i="h1" class="text-[36px] sm:text-[48px] font-bold tracking-tight leading-[1.1] text-slate-900"></h1>
+  <p data-i="sub" class="mt-5 text-lg text-slate-500 max-w-xl mx-auto leading-relaxed"></p>
+</section>
+
+<section class="max-w-3xl mx-auto px-5 pb-14">
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+    <label data-i="lbl_title" class="block text-sm font-medium text-slate-700 mb-1"></label>
+    <input id="title" type="text" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none mb-4" />
+    <label data-i="lbl_bullets" class="block text-sm font-medium text-slate-700 mb-1"></label>
+    <textarea id="bullets" rows="6" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none resize-y"></textarea>
+    <button id="go" data-i="btn" class="mt-4 w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white font-medium px-6 py-3 rounded-xl transition"></button>
+    <div id="result" class="mt-6 hidden">
+      <div class="flex items-center gap-4 mb-5">
+        <div id="scoreCircle" class="shrink-0 w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold"></div>
+        <div><div id="scoreLabel" class="font-semibold text-slate-900"></div><div id="metrics" class="text-[13px] text-slate-500 mt-0.5"></div></div>
+      </div>
+      <ul id="issues" class="space-y-2.5"></ul>
+    </div>
+  </div>
+  <p data-i="trust" class="text-center text-[13px] text-slate-400 mt-4"></p>
+</section>
+
+<!-- MONETIZATION (zero-cost): replace hrefs with your own affiliate links — see mvps/README.md -->
+<section class="max-w-3xl mx-auto px-5 pb-14">
+  <div class="text-center text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-3">Sponsored</div>
+  <div class="grid sm:grid-cols-2 gap-3">
+    <a href="https://REPLACE-WITH-YOUR-AFFILIATE-LINK" target="_blank" rel="sponsored noopener" class="block bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-300 hover:shadow-sm transition">
+      <div class="font-medium text-slate-900 text-sm">Product & keyword research</div>
+      <div class="text-[13px] text-slate-500 mt-0.5">Find winning products and the keywords buyers search.</div>
+    </a>
+    <a href="https://REPLACE-WITH-YOUR-AFFILIATE-LINK" target="_blank" rel="sponsored noopener" class="block bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-300 hover:shadow-sm transition">
+      <div class="font-medium text-slate-900 text-sm">Source & ship faster</div>
+      <div class="text-[13px] text-slate-500 mt-0.5">Reliable suppliers and fulfillment for online sellers.</div>
+    </a>
+  </div>
+</section>
+
+<section id="waitlist" class="bg-slate-900">
+  <div class="max-w-lg mx-auto px-5 py-16 text-center">
+    <h2 data-i="wl_h" class="text-[26px] font-bold tracking-tight text-white mb-2"></h2>
+    <p data-i="wl_sub" class="text-slate-400 mb-6 text-[15px]"></p>
+    <form id="waitlist-form" class="flex flex-col sm:flex-row gap-3 justify-center">
+      <input type="email" name="email" required data-i-ph="wl_ph" class="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white placeholder-slate-500 focus:border-brand-500 outline-none" />
+      <input type="hidden" name="mvp" value="ecom-listing" />
+      <button type="submit" data-i="wl_btn" class="bg-brand-600 hover:bg-brand-500 text-white font-medium px-6 py-3 rounded-xl transition whitespace-nowrap"></button>
+    </form>
+    <p id="wl_msg" class="mt-4 text-sm font-medium hidden"></p>
+  </div>
+</section>
+
+<footer class="border-t border-slate-100 py-8 text-center">
+  <div class="flex flex-wrap justify-center gap-x-5 gap-y-2 text-[13px] text-slate-500">
+    <a href="../cold-email/" class="hover:text-slate-800">ReplyBoost</a>
+    <a href="../subject-line/" class="hover:text-slate-800">Subject Tester</a>
+    <a href="../ecom-listing/" class="hover:text-slate-800">ListRank</a>
+    <a href="../realestate-listing/" class="hover:text-slate-800">RentReturn</a>
+    <a href="../proposal-rfp/" class="hover:text-slate-800">BidList</a>
+  </div>
+  <div class="text-xs text-slate-400 mt-3">100% free · runs in your browser</div>
+</footer>
+
+<script>
+  const I18N = {
+    en: { _name:"English", nav_cta:"Join waitlist", badge:"For e-commerce & cross-border sellers",
+      h1:"Is your listing costing you sales?", sub:"Paste your title and bullets. We flag length, missing specs, banned words and weak bullets — all in your browser.",
+      lbl_title:"Product title", lbl_bullets:"Bullet points (one per line)", btn:"Check my listing",
+      trust:"100% free · runs in your browser · nothing is uploaded",
+      wl_h:"Want auto-optimized listings?", wl_sub:"Join the waitlist for one-click suggestions.", wl_ph:"Your email", wl_btn:"Join",
+      sc_good:"Looks strong", sc_ok:"Could be better", sc_bad:"Needs work", m_title:"title chars", m_bullets:"bullets",
+      all_good:"Nice — solid listing. Add one more concrete benefit and you're set.", empty:"Add a title first.",
+      banned:{ list:["best","#1","cheapest","100% guaranteed","miracle","cure","perfect","amazing"], msg:"Risky/empty words: {x}. Marketplaces dislike unprovable claims — use specs instead." },
+      t_short:"Title is short ({x} chars). Add key attributes (size, material, use-case) up to ~150 chars.",
+      t_long:"Title very long ({x} chars). Front-load the keywords; many marketplaces truncate around 150.",
+      few_bullets:"Only {x} bullet(s). Aim for 5, each leading with a benefit.",
+      no_specs:"No numbers/specs in the title. Buyers scan for size, capacity, count — add them.",
+      caps:"Too much ALL-CAPS. It reads as spammy — use normal case." },
+    zh: { _name:"中文", nav_cta:"加入等待名单", badge:"为电商 / 跨境卖家打造",
+      h1:"你的 listing 是不是在丢单？", sub:"粘进标题和五点描述，浏览器里即时标出：长度、缺参数、违禁词、五点偏弱。",
+      lbl_title:"产品标题", lbl_bullets:"五点描述（每行一条）", btn:"体检我的 listing",
+      trust:"完全免费 · 浏览器内运行 · 不上传任何内容",
+      wl_h:"想要一键优化版？", wl_sub:"加入等待名单，第一时间用上一键建议。", wl_ph:"你的邮箱", wl_btn:"加入",
+      sc_good:"表现不错", sc_ok:"还能更好", sc_bad:"需要改进", m_title:"标题字符", m_bullets:"条五点",
+      all_good:"不错——listing 挺扎实。再加一个具体卖点就更好了。", empty:"请先填标题。",
+      banned:{ list:["最好","第一","最便宜","100%保证","神奇","治愈","完美","惊艳"], msg:"空洞/风险词：{x}。平台不喜欢无法证实的夸张——用参数代替。" },
+      t_short:"标题偏短（{x} 字符）。补上关键属性（尺寸、材质、场景），可到约 150 字符。",
+      t_long:"标题过长（{x} 字符）。把关键词提前；很多平台约 150 字符就截断。",
+      few_bullets:"只有 {x} 条五点。建议 5 条，每条先讲卖点。",
+      no_specs:"标题里没有数字/参数。买家会扫尺寸、容量、数量——加上去。",
+      caps:"全大写过多，显得像垃圾信息——用正常大小写。" },
+    es: { _name:"Español", nav_cta:"Unirse a la lista", badge:"Para e-commerce y vendedores transfronterizos",
+      h1:"¿Tu ficha te está costando ventas?", sub:"Pega el título y los bullets. Marcamos longitud, specs faltantes, palabras prohibidas y bullets débiles.",
+      lbl_title:"Título del producto", lbl_bullets:"Bullets (uno por línea)", btn:"Revisar mi ficha",
+      trust:"100% gratis · en tu navegador · no se sube nada",
+      wl_h:"¿Quieres fichas auto-optimizadas?", wl_sub:"Únete a la lista para sugerencias en un clic.", wl_ph:"Tu correo", wl_btn:"Unirse",
+      sc_good:"Se ve bien", sc_ok:"Podría mejorar", sc_bad:"Necesita trabajo", m_title:"caracteres", m_bullets:"bullets",
+      all_good:"Bien — ficha sólida. Añade un beneficio concreto más y listo.", empty:"Añade un título primero.",
+      banned:{ list:["mejor","#1","más barato","100% garantizado","milagro","cura","perfecto","increíble"], msg:"Palabras vacías/riesgosas: {x}. Usa specs en su lugar." },
+      t_short:"Título corto ({x} caracteres). Añade atributos clave hasta ~150.",
+      t_long:"Título muy largo ({x} caracteres). Pon las palabras clave primero; muchos marketplaces truncan en ~150.",
+      few_bullets:"Solo {x} bullet(s). Apunta a 5, cada uno con un beneficio.",
+      no_specs:"Sin números/specs en el título. Añade tamaño, capacidad, cantidad.",
+      caps:"Demasiadas MAYÚSCULAS. Parece spam — usa formato normal." },
+  };
+
+  let lang=(navigator.language||"en").slice(0,2).toLowerCase(); if(!I18N[lang]) lang="en";
+  const langSel=document.getElementById('lang');
+  Object.keys(I18N).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=I18N[c]._name;langSel.appendChild(o);});
+  langSel.value=lang;
+  function apply(){const t=I18N[lang];document.documentElement.lang=lang;
+    document.querySelectorAll('[data-i]').forEach(el=>{const k=el.getAttribute('data-i');if(t[k]!=null)el.textContent=t[k];});
+    document.querySelectorAll('[data-i-ph]').forEach(el=>{const k=el.getAttribute('data-i-ph');if(t[k]!=null)el.placeholder=t[k];});}
+  langSel.addEventListener('change',()=>{lang=langSel.value;apply();document.getElementById('result').classList.add('hidden');});
+  apply();
+
+  const go=document.getElementById('go'),result=document.getElementById('result'),issuesEl=document.getElementById('issues'),
+        scoreCircle=document.getElementById('scoreCircle'),scoreLabel=document.getElementById('scoreLabel'),metricsEl=document.getElementById('metrics');
+
+  go.addEventListener('click',()=>{
+    const t=I18N[lang];
+    const title=document.getElementById('title').value.trim();
+    const bulletsRaw=document.getElementById('bullets').value;
+    if(!title){alert(t.empty);return;}
+    const bullets=bulletsRaw.split('\n').map(s=>s.trim()).filter(Boolean);
+    const titleLen=title.length;
+    const lower=(title+' '+bulletsRaw).toLowerCase();
+    const banned=t.banned.list.filter(w=>lower.includes(w.toLowerCase()));
+    const hasNum=/\d/.test(title);
+    const caps=(title.match(/\b[A-Z]{4,}\b/g)||[]).length;
+
+    const issues=[]; const add=(m,p)=>issues.push({m,p});
+    if(titleLen<80) add(t.t_short.replace("{x}",titleLen),15); else if(titleLen>200) add(t.t_long.replace("{x}",titleLen),12);
+    if(bullets.length<5) add(t.few_bullets.replace("{x}",bullets.length),15);
+    if(banned.length) add(t.banned.msg.replace("{x}",banned.slice(0,6).join(", ")),Math.min(8+banned.length*3,20));
+    if(!hasNum) add(t.no_specs,12);
+    if(caps>1) add(t.caps,10);
+
+    const score=Math.max(0,100-issues.reduce((s,i)=>s+i.p,0));
+    const c=score>=80?['bg-green-100','text-green-700',t.sc_good]:score>=50?['bg-amber-100','text-amber-700',t.sc_ok]:['bg-red-100','text-red-700',t.sc_bad];
+    scoreCircle.className="shrink-0 w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold "+c[0]+" "+c[1];
+    scoreCircle.textContent=score; scoreLabel.textContent=c[2];
+    metricsEl.textContent=`${titleLen} ${t.m_title} · ${bullets.length} ${t.m_bullets}`;
+    if(!issues.length){issuesEl.innerHTML=`<li class="flex gap-2 text-[14px] text-green-700"><span>✓</span><span>${t.all_good}</span></li>`;}
+    else{issuesEl.innerHTML=issues.map(()=>`<li class="flex gap-2 text-[14px] text-slate-700"><span class="text-amber-500 shrink-0">•</span><span></span></li>`).join('');
+      [...issuesEl.querySelectorAll('li span:last-child')].forEach((s,i)=>s.textContent=issues[i].m);}
+    result.classList.remove('hidden');
+  });
+
+  const FORMSPREE_ENDPOINT="https://formspree.io/f/FORMSPREE_ENDPOINT";
+  const form=document.getElementById('waitlist-form'),wlMsg=document.getElementById('wl_msg');
+  form.addEventListener('submit',async ev=>{ev.preventDefault();const data=new FormData(form);data.append('lang',lang);
+    wlMsg.className="mt-4 text-sm font-medium text-slate-300";wlMsg.textContent="…";wlMsg.classList.remove('hidden');
+    try{if(FORMSPREE_ENDPOINT.includes('FORMSPREE_ENDPOINT'))throw 0;const r=await fetch(FORMSPREE_ENDPOINT,{method:'POST',body:data,headers:{Accept:'application/json'}});if(!r.ok)throw 0;
+      wlMsg.className="mt-4 text-sm font-medium text-green-400";wlMsg.textContent="✓";form.reset();}
+    catch{wlMsg.className="mt-4 text-sm font-medium text-amber-400";wlMsg.textContent="(demo: configure Formspree)";}});
+</script>
+</body>
+</html>

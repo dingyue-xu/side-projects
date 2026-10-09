@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BidList — Turn an RFP into a compliance checklist</title>
+<meta name="description" content="Paste a tender/RFP and instantly split it into a tick-off compliance checklist so you never miss a requirement. Free, runs in your browser." />
+<link rel="canonical" href="https://mvps-ebon.vercel.app/proposal-rfp/" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://mvps-ebon.vercel.app/proposal-rfp/" />
+<meta property="og:title" content="BidList — Turn an RFP into a compliance checklist" />
+<meta property="og:description" content="Paste a tender/RFP and split it into a tick-off compliance checklist so you never miss a requirement. Free, in your browser." />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="BidList — Turn an RFP into a compliance checklist" />
+<meta name="twitter:description" content="Never miss an RFP requirement again — instant checklist, free." />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { brand: { 50:'#eef2ff',100:'#e0e7ff',500:'#6366f1',600:'#4f46e5',700:'#4338ca' } },
+    fontFamily: { sans: ['-apple-system','BlinkMacSystemFont','Segoe UI','Inter','Roboto','Helvetica Neue','Arial','sans-serif'] }
+  } } };
+</script>
+<!-- MONETIZATION — display ads (optional, zero-cost). Paste your AdSense loader & uncomment:
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXX" crossorigin="anonymous"></script>
+-->
+</head>
+<body class="bg-white text-slate-800 antialiased">
+
+<header class="sticky top-0 z-20 border-b border-slate-100 bg-white/80 backdrop-blur">
+  <div class="max-w-3xl mx-auto px-5 h-16 flex items-center justify-between">
+    <div class="font-semibold text-[15px] tracking-tight text-slate-900">Bid<span class="text-brand-600">List</span></div>
+    <div class="flex items-center gap-3">
+      <select id="lang" class="text-[13px] border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-600 outline-none focus:border-brand-500"></select>
+      <a href="#waitlist" data-i="nav_cta" class="text-[13px] font-medium text-white bg-slate-900 hover:bg-slate-800 px-4 py-2 rounded-lg transition"></a>
+    </div>
+  </div>
+</header>
+
+<section class="max-w-3xl mx-auto px-5 pt-20 pb-8 text-center">
+  <div data-i="badge" class="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-500 bg-slate-50 border border-slate-200 rounded-full px-3 py-1 mb-6"></div>
+  <h1 data-i="h1" class="text-[36px] sm:text-[48px] font-bold tracking-tight leading-[1.1] text-slate-900"></h1>
+  <p data-i="sub" class="mt-5 text-lg text-slate-500 max-w-xl mx-auto leading-relaxed"></p>
+</section>
+
+<section class="max-w-3xl mx-auto px-5 pb-14">
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+    <label data-i="lbl" class="block text-sm font-medium text-slate-700 mb-1"></label>
+    <textarea id="rfp" rows="8" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none resize-y"></textarea>
+    <button id="go" data-i="btn" class="mt-4 w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white font-medium px-6 py-3 rounded-xl transition"></button>
+
+    <div id="result" class="mt-6 hidden">
+      <div class="flex items-center justify-between mb-3">
+        <div id="count" class="text-sm font-semibold text-slate-900"></div>
+        <button id="copy" data-i="copy" class="text-[13px] font-medium text-brand-600 hover:text-brand-700"></button>
+      </div>
+      <ul id="list" class="space-y-2"></ul>
+    </div>
+  </div>
+  <p data-i="trust" class="text-center text-[13px] text-slate-400 mt-4"></p>
+</section>
+
+<!-- MONETIZATION (zero-cost): replace hrefs with your own affiliate links — see mvps/README.md -->
+<section class="max-w-3xl mx-auto px-5 pb-14">
+  <div class="text-center text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-3">Sponsored</div>
+  <div class="grid sm:grid-cols-2 gap-3">
+    <a href="https://REPLACE-WITH-YOUR-AFFILIATE-LINK" target="_blank" rel="sponsored noopener" class="block bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-300 hover:shadow-sm transition">
+      <div class="font-medium text-slate-900 text-sm">Proposal & e-signature software</div>
+      <div class="text-[13px] text-slate-500 mt-0.5">Send trackable proposals and close with e-signatures.</div>
+    </a>
+    <a href="https://REPLACE-WITH-YOUR-AFFILIATE-LINK" target="_blank" rel="sponsored noopener" class="block bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-300 hover:shadow-sm transition">
+      <div class="font-medium text-slate-900 text-sm">Contract & SOW templates</div>
+      <div class="text-[13px] text-slate-500 mt-0.5">Lawyer-reviewed templates for agencies and consultants.</div>
+    </a>
+  </div>
+</section>
+
+<section id="waitlist" class="bg-slate-900">
+  <div class="max-w-lg mx-auto px-5 py-16 text-center">
+    <h2 data-i="wl_h" class="text-[26px] font-bold tracking-tight text-white mb-2"></h2>
+    <p data-i="wl_sub" class="text-slate-400 mb-6 text-[15px]"></p>
+    <form id="waitlist-form" class="flex flex-col sm:flex-row gap-3 justify-center">
+      <input type="email" name="email" required data-i-ph="wl_ph" class="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white placeholder-slate-500 focus:border-brand-500 outline-none" />
+      <input type="hidden" name="mvp" value="proposal-rfp" />
+      <button type="submit" data-i="wl_btn" class="bg-brand-600 hover:bg-brand-500 text-white font-medium px-6 py-3 rounded-xl transition whitespace-nowrap"></button>
+    </form>
+    <p id="wl_msg" class="mt-4 text-sm font-medium hidden"></p>
+  </div>
+</section>
+
+<footer class="border-t border-slate-100 py-8 text-center">
+  <div class="flex flex-wrap justify-center gap-x-5 gap-y-2 text-[13px] text-slate-500">
+    <a href="../cold-email/" class="hover:text-slate-800">ReplyBoost</a>
+    <a href="../subject-line/" class="hover:text-slate-800">Subject Tester</a>
+    <a href="../ecom-listing/" class="hover:text-slate-800">ListRank</a>
+    <a href="../realestate-listing/" class="hover:text-slate-800">RentReturn</a>
+    <a href="../proposal-rfp/" class="hover:text-slate-800">BidList</a>
+  </div>
+  <div class="text-xs text-slate-400 mt-3">100% free · runs in your browser</div>
+</footer>
+
+<script>
+  const I18N = {
+    en:{_name:"English",nav_cta:"Join waitlist",badge:"For agencies, consultancies & bidders",
+      h1:"Never miss an RFP requirement again.",sub:"Paste the tender text. We split it into a tick-off compliance checklist you can work through and copy — all in your browser.",
+      lbl:"Paste the RFP / tender text",btn:"Build checklist",copy:"Copy checklist",
+      trust:"100% free · runs in your browser · nothing is uploaded",
+      wl_h:"Want auto-drafted responses?",wl_sub:"Join the waitlist for response templates per requirement.",wl_ph:"Your email",wl_btn:"Join",
+      count:"{x} requirements found",empty:"Paste the RFP text first.",none:"No clear requirements detected — try pasting the requirements section.",copied:"Copied!"},
+    zh:{_name:"中文",nav_cta:"加入等待名单",badge:"为代理商 / 咨询 / 投标方打造",
+      h1:"再也不漏掉招标要求。",sub:"粘进招标文本，我们把它拆成可逐条勾选的应答清单，可直接复制——全在浏览器里。",
+      lbl:"粘贴 RFP / 招标文本",btn:"生成清单",copy:"复制清单",
+      trust:"完全免费 · 浏览器内运行 · 不上传任何内容",
+      wl_h:"想要自动起草应答？",wl_sub:"加入等待名单，按每条要求生成应答模板。",wl_ph:"你的邮箱",wl_btn:"加入",
+      count:"识别到 {x} 条要求",empty:"请先粘贴招标文本。",none:"未识别到明确要求——试试粘贴“要求/评分”那一段。",copied:"已复制！"},
+    es:{_name:"Español",nav_cta:"Unirse a la lista",badge:"Para agencias, consultoras y licitadores",
+      h1:"No vuelvas a omitir un requisito.",sub:"Pega el texto de la licitación. Lo dividimos en una lista de cumplimiento para marcar y copiar — en tu navegador.",
+      lbl:"Pega el texto del RFP / licitación",btn:"Crear checklist",copy:"Copiar checklist",
+      trust:"100% gratis · en tu navegador · no se sube nada",
+      wl_h:"¿Quieres respuestas autogeneradas?",wl_sub:"Únete a la lista para plantillas por requisito.",wl_ph:"Tu correo",wl_btn:"Unirse",
+      count:"{x} requisitos encontrados",empty:"Pega el texto del RFP primero.",none:"No se detectaron requisitos claros — pega la sección de requisitos.",copied:"¡Copiado!"},
+  };
+  let lang=(navigator.language||"en").slice(0,2).toLowerCase(); if(!I18N[lang]) lang="en";
+  const langSel=document.getElementById('lang');
+  Object.keys(I18N).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=I18N[c]._name;langSel.appendChild(o);});
+  langSel.value=lang;
+  function apply(){const t=I18N[lang];document.documentElement.lang=lang;
+    document.querySelectorAll('[data-i]').forEach(el=>{const k=el.getAttribute('data-i');if(t[k]!=null)el.textContent=t[k];});
+    document.querySelectorAll('[data-i-ph]').forEach(el=>{const k=el.getAttribute('data-i-ph');if(t[k]!=null)el.placeholder=t[k];});}
+  langSel.addEventListener('change',()=>{lang=langSel.value;apply();document.getElementById('result').classList.add('hidden');});
+  apply();
+
+  let items=[];
+  document.getElementById('go').addEventListener('click',()=>{
+    const t=I18N[lang];
+    const raw=document.getElementById('rfp').value;
+    if(!raw.trim()){alert(t.empty);return;}
+    // Split into requirement-like chunks: by line, then by sentence enders; strip bullets/numbering.
+    let chunks=[];
+    raw.split('\n').forEach(line=>{
+      line.split(/(?<=[.;。；])\s+/).forEach(s=>chunks.push(s));
+    });
+    items=chunks.map(s=>s.replace(/^\s*([0-9]+[.)、]|[-*•·]|[（(][0-9a-z][)）])\s*/i,'').trim())
+                .filter(s=>s.length>=8).slice(0,80);
+    const list=document.getElementById('list');
+    document.getElementById('count').textContent=t.count.replace("{x}",items.length);
+    if(!items.length){ list.innerHTML=`<li class="text-[14px] text-amber-600">${t.none}</li>`; }
+    else{
+      list.innerHTML=items.map(()=>`<li class="flex gap-2.5 items-start"><input type="checkbox" class="mt-1 accent-brand-600"><span class="text-[14px] text-slate-700"></span></li>`).join('');
+      [...list.querySelectorAll('li span')].forEach((s,i)=>s.textContent=items[i]);
+    }
+    document.getElementById('result').classList.remove('hidden');
+  });
+  document.getElementById('copy').addEventListener('click',()=>{
+    const t=I18N[lang];
+    const text=items.map(s=>"- [ ] "+s).join('\n');
+    navigator.clipboard.writeText(text).then(()=>{const b=document.getElementById('copy');const o=b.textContent;b.textContent=t.copied;setTimeout(()=>b.textContent=o,1500);});
+  });
+
+  const FORMSPREE_ENDPOINT="https://formspree.io/f/FORMSPREE_ENDPOINT";
+  const form=document.getElementById('waitlist-form'),wlMsg=document.getElementById('wl_msg');
+  form.addEventListener('submit',async ev=>{ev.preventDefault();const data=new FormData(form);data.append('lang',lang);
+    wlMsg.className="mt-4 text-sm font-medium text-slate-300";wlMsg.textContent="…";wlMsg.classList.remove('hidden');
+    try{if(FORMSPREE_ENDPOINT.includes('FORMSPREE_ENDPOINT'))throw 0;const r=await fetch(FORMSPREE_ENDPOINT,{method:'POST',body:data,headers:{Accept:'application/json'}});if(!r.ok)throw 0;
+      wlMsg.className="mt-4 text-sm font-medium text-green-400";wlMsg.textContent="✓";form.reset();}
+    catch{wlMsg.className="mt-4 text-sm font-medium text-amber-400";wlMsg.textContent="(demo: configure Formspree)";}});
+</script>
+</body>
+</html>
