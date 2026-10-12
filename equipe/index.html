@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Équipe：个人学习与生活的多 Agent 管理平台。通告单式今日看板、可自定义的 Agent 团队、任务、习惯与复盘。">
+<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Équipe</title>
+<link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a dark film-slate rail on the left, a call sheet on the right. One row per agent. */
+:root{
+  --bg:#f1f2f5; --surface:#ffffff; --sunk:#e8eaf0; --ink:#171a2b; --muted:#646a82; --line:#dcdfe8;
+  --accent:#f0b429; --accent-ink:#8a5f00; --on-accent:#1a1400;
+  --side:#171a2b; --side-ink:#eceef6; --side-muted:#9aa0b8;
+  --ok:#1f8a5b; --bad:#c23b22;
+  --display:"Bricolage Grotesque","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+  --body:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC","Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f111a; --surface:#181b28; --sunk:#11131d; --ink:#eceef6; --muted:#9aa0b8; --line:#2b2f42;
+  --accent:#f2b632; --accent-ink:#f2b632; --on-accent:#1a1400;
+  --side:#0a0c13; --side-ink:#eceef6; --side-muted:#8d93ab; --ok:#4cc38a; --bad:#f0806a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f111a; --surface:#181b28; --sunk:#11131d; --ink:#eceef6; --muted:#9aa0b8; --line:#2b2f42;
+  --accent:#f2b632; --accent-ink:#f2b632; --on-accent:#1a1400;
+  --side:#0a0c13; --side-ink:#eceef6; --side-muted:#8d93ab; --ok:#4cc38a; --bad:#f0806a; color-scheme:dark }
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.6}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.app{display:grid;grid-template-columns:200px minmax(0,1fr);min-height:100%}
+.side{background:var(--side);color:var(--side-ink);padding:22px 14px;display:flex;flex-direction:column;gap:22px;position:sticky;top:0;align-self:start;height:100vh}
+.brand{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:-.02em;line-height:1}
+.brand small{display:block;font-family:var(--body);font-weight:400;font-size:12px;color:var(--side-muted);margin-top:8px;letter-spacing:0}
+.stripe{height:6px;border-radius:1px;background:repeating-linear-gradient(115deg,var(--accent) 0 12px,transparent 12px 24px)}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{background:none;border:0;text-align:left;color:var(--side-muted);white-space:nowrap}
+.nav button:hover{color:var(--side-ink)}
+.nav button[aria-current="page"]{background:var(--accent);color:var(--on-accent);font-weight:600}
+.side .status{margin-top:auto;font-size:12px;color:var(--side-muted);line-height:1.5}
+
+main{padding-block:28px 96px;padding-inline:clamp(16px,4vw,44px);min-width:0;max-width:1080px;width:100%}
+.head{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink)}
+h1{font-family:var(--display);font-size:30px;font-weight:700;letter-spacing:-.02em;margin:2px 0 0;line-height:1.15;text-wrap:balance}
+h2{font-size:15px;margin:0;font-weight:600}
+.sub{color:var(--muted);margin:4px 0 0;max-width:60ch}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.stack{display:flex;flex-direction:column;gap:16px}
+.grow{flex:1 1 180px;min-width:0}
+
+.btn{border:1px solid var(--line);background:var(--surface);padding:7px 13px;border-radius:6px;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--ink)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
+.btn.ai{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+.btn.ghost{background:none;border-color:transparent;color:var(--muted);padding:5px 8px}
+.btn.ghost:hover:not(:disabled){color:var(--ink);border-color:var(--line)}
+.btn.danger{color:var(--bad)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+input[type=text],input[type=date],select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:80px;line-height:1.6}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted)}
+label.f>*{font-size:14px;color:var(--ink)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 18px}
+.panel>h2{margin-bottom:10px}
+.banner{background:var(--sunk);border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;color:var(--muted)}
+.stats{display:flex;flex-wrap:wrap;gap:28px}
+.stat b{display:block;font-family:var(--display);font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted)}
+
+/* call sheet */
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.sheet-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 18px;border-bottom:2px solid var(--ink);font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.call{display:grid;grid-template-columns:190px minmax(0,1fr);gap:16px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.call:last-child{border-bottom:0}
+.who{display:flex;gap:10px;align-items:flex-start;min-width:0}
+.dot{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;font-family:var(--display);font-weight:700;font-size:13px}
+.who b{display:block;line-height:1.3}
+.who small{color:var(--muted);font-size:12px;line-height:1.4;display:block}
+.items{display:flex;flex-direction:column;gap:6px;min-width:0}
+.item{display:flex;gap:9px;align-items:flex-start;min-width:0}
+.item input[type=checkbox]{margin-top:4px;width:15px;height:15px;accent-color:var(--ok);flex:none}
+.item .t{flex:1;min-width:0;overflow-wrap:anywhere}
+.item.done .t{color:var(--muted);text-decoration:line-through}
+.meta{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap}
+.meta.late{color:var(--bad);font-weight:600}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:99px;border:1px solid var(--line);background:var(--surface);white-space:nowrap}
+.chip i{width:7px;height:7px;border-radius:50%;display:inline-block}
+.chip.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.chip.eg{border-style:dashed;color:var(--muted)}
+button.chip:hover{border-color:var(--ink)}
+.idle{color:var(--muted);font-size:13px}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.card.off{opacity:.55}
+.card p{margin:0;color:var(--muted);font-size:13px}
+.card .foot{margin-top:auto;display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:space-between}
+
+.list{background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.list .item{padding:11px 16px;border-bottom:1px solid var(--line);align-items:center;flex-wrap:wrap}
+.list .item:last-child{border-bottom:0}
+.list .item .t{flex:1 1 220px}
+.tabs{display:flex;gap:2px;background:var(--sunk);padding:3px;border-radius:7px}
+.tabs button{border:0;background:none;padding:5px 12px;border-radius:5px;color:var(--muted)}
+.tabs button[aria-pressed=true]{background:var(--surface);color:var(--ink);font-weight:600}
+.week{display:flex;gap:4px}
+.week button{width:30px;height:34px;border:1px solid var(--line);background:var(--surface);border-radius:5px;font-family:var(--mono);font-size:10px;color:var(--muted);padding:0;line-height:1.2}
+.week button.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.week button.today{border-color:var(--ink)}
+
+.chat{display:flex;flex-direction:column;gap:12px}
+.log{display:flex;flex-direction:column;gap:10px;max-height:52vh;overflow-y:auto;padding:4px 2px}
+.msg{max-width:min(640px,92%);padding:10px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+.msg.me{align-self:flex-end;background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.msg .by{font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:2px}
+.rich{white-space:pre-wrap;overflow-wrap:anywhere}
+.note{border-bottom:1px solid var(--line);padding:14px 0}
+.note:last-child{border-bottom:0}
+.note .rich{max-width:68ch}
+
+#busy{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:8px 10px 8px 16px;border-radius:99px;display:flex;gap:12px;align-items:center;z-index:30;max-width:calc(100% - 32px)}
+#busy button{border:0;background:var(--accent);color:var(--on-accent);border-radius:99px;padding:4px 12px;font-weight:600}
+#toast{position:fixed;right:16px;top:calc(16px + env(safe-area-inset-top,0px));background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:6px;z-index:50;max-width:calc(100% - 32px)}
+#veil{position:fixed;inset:0;background:rgb(10 12 19 / .55);display:grid;place-items:center;padding:16px;z-index:40;overflow-y:auto}
+.modal{background:var(--surface);border-radius:10px;width:min(560px,100%);padding:20px;display:flex;flex-direction:column;gap:14px;border:1px solid var(--line)}
+.modal h2{font-family:var(--display);font-size:20px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.swatches button{width:26px;height:26px;border-radius:50%;border:2px solid transparent;padding:0}
+.swatches button[aria-pressed=true]{border-color:var(--ink);outline:2px solid var(--surface);outline-offset:-4px}
+
+/* v2 refinements */
+body{font-size:15px}
+.nav button{display:flex;align-items:center;gap:11px;min-height:42px;padding:0 12px;border-radius:8px}
+.nav button .lb{flex:1}
+.nav button .ct{font-family:var(--mono);font-size:11px;opacity:.75}
+.nav .m-only{display:none}
+.me{margin-top:auto;display:flex;gap:10px;align-items:center;padding:14px 6px 0;border-top:1px solid rgb(255 255 255 / .12)}
+.me .dot{background:rgb(255 255 255 / .14);width:32px;height:32px}
+.me b{display:block;font-size:13px;line-height:1.3}
+.me small{font-size:11px;color:var(--side-muted)}
+.panel,.sheet,.card,.list{border-radius:12px}
+main{padding-block:34px 96px}
+h1{font-size:32px}
+.gx{flex:1;min-width:0}
+.btn.icon{padding:6px;display:inline-flex}
+.prog{display:flex;flex-direction:column;gap:8px;flex:0 1 300px;min-width:220px}
+.prog-top{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted)}
+.prog-top b{font-family:var(--display);font-size:22px;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
+.segs{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px}
+.segs i{height:8px;border-radius:2px;background:var(--line)}
+.segs i.on{background:var(--ok)}
+.quick{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px}
+.quick input[type=text]{flex:999 1 220px;border:0;background:transparent;min-height:42px}
+.quick select{flex:1 1 130px;width:auto;min-height:42px;background:var(--bg)}
+.quick .btn{min-height:42px;padding-inline:18px}
+.cols{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.col-main{flex:999 1 460px;min-width:0}
+.col-side{flex:1 1 290px;min-width:0;display:flex;flex-direction:column;gap:16px}
+.dark{background:var(--side);color:var(--side-ink);border:1px solid var(--line);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.dark .tag{font-family:var(--mono);font-size:11px;color:var(--side-muted)}
+.dark .rich{opacity:.9;line-height:1.7}
+.sheet .dot{width:36px;height:36px;font-size:15px}
+.call{grid-template-columns:240px minmax(0,1fr);padding:16px 20px}
+.who{align-items:center}
+.item{min-height:34px;align-items:center}
+.item input[type=checkbox]{width:18px;height:18px;margin:0}
+.pill{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:4px;background:var(--bg);color:var(--muted);white-space:nowrap}
+.pill.late{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad);font-weight:600}
+.chip.hb{min-height:36px;padding:0 14px;border-style:dashed;font-size:13px}
+.chip.hb.on{border-style:solid;font-weight:600}
+.tl{display:flex;flex-direction:column}
+.tl-row{display:flex;gap:14px}
+.tl-rail{display:flex;flex-direction:column;align-items:center;flex:none;width:36px}
+.tl-rail .dot{width:36px;height:36px;font-size:15px}
+.tl-rail::after{content:"";flex:1;width:2px;background:var(--line)}
+.tl-row:last-child .tl-rail::after{display:none}
+.tl-body{flex:1;min-width:0;min-height:58px;padding-block:6px 18px;display:flex;flex-direction:column;gap:4px}
+.tl-body .msg{max-width:none;border-radius:4px 12px 12px 12px}
+.tl-body .msg.sum{background:var(--side);color:var(--side-ink);border-color:var(--line)}
+.pick{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px 0 5px;border:2px solid var(--line);border-radius:22px;background:var(--surface);color:var(--muted)}
+.pick[aria-pressed=true]{border-color:var(--ink);color:var(--ink);font-weight:600}
+.pick .dot{width:28px;height:28px}
+.pick[aria-pressed=false] .dot{filter:grayscale(1);opacity:.55}
+.more a,.more button{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:0 16px;background:none;border:0;border-bottom:1px solid var(--line);text-align:left}
+.more button:last-child{border-bottom:0}
+
+@media (max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto 1fr}
+  .side{position:static;height:auto;flex-direction:row;align-items:center;padding:12px 16px;gap:12px}
+  .brand{font-size:20px}.brand small,.stripe,.me{display:none}
+  .nav{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--side);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px))}
+  .nav button{flex-direction:column;justify-content:center;gap:3px;min-height:50px;padding:0;font-size:11px}
+  .nav button .lb{flex:none}
+  .nav button .ct,.nav .d-only{display:none}
+  .nav .m-only{display:flex}
+  main{padding-block:22px 130px}
+  #busy{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+  .prog{flex:1 1 100%}
+  .list .item .t{flex:1 1 100%}
+  .call{grid-template-columns:minmax(0,1fr);gap:8px}
+  .two{grid-template-columns:1fr}
+  h1{font-size:25px}
+}
+@media (prefers-reduced-motion:no-preference){ .btn,.nav button,.chip{transition:border-color .12s,background .12s,color .12s} }
+</style>
+
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">Équipe<small>我的 Agent 团队</small></div>
+    <div class="stripe" aria-hidden="true"></div>
+    <nav class="nav" id="nav" aria-label="主导航"></nav>
+    <div class="me"><span class="dot" id="me-dot" aria-hidden="true"></span><div><b id="me-name"></b><small id="status"></small></div></div>
+  </aside>
+  <main id="main"></main>
+</div>
+<div id="busy" hidden><span id="busy-text"></span><button type="button" id="busy-stop">停止</button></div>
+<div id="toast" hidden role="status"></div>
+<div id="veil" hidden></div>
+
+<script>
+/* ---------- helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+function h(tag, props, ...kids) {
+  const e = document.createElement(tag); let val;
+  for (const k in props || {}) {
+    const v = props[k]; if (v == null || v === false) continue;
+    if (k === 'class') e.className = v;
+    else if (k === 'style') e.style.cssText = v;
+    else if (k === 'value') val = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (k === 'for') e.htmlFor = v;
+    else if (k in e) e[k] = v;
+    else e.setAttribute(k, v);
+  }
+  for (const c of kids.flat(Infinity)) { if (c == null || c === false) continue; e.append(c.nodeType ? c : document.createTextNode(String(c))); }
+  if (val !== undefined) e.value = val;
+  return e;
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function rich(t, id) { const d = h('div', { class: 'rich', id }); d.innerHTML = esc(t || '').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'); return d; }
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const today = () => ymd(new Date());
+const dayOff = n => { const d = new Date(); d.setDate(d.getDate() + n); return ymd(d); };
+const WD = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+const wdOf = s => WD[new Date(s + 'T12:00:00').getDay()];
+const HUES = [222, 262, 330, 8, 32, 150, 180, 200];
+const hue = a => 'hsl(' + (a && a.hue != null ? a.hue : 222) + ' 58% 46%)';
+const ST = { todo: '待办', doing: '进行中', done: '完成' };
+const NOTE_T = { brief: '晨会简报', review: '周复盘', roundtable: '圆桌纪要', journal: '随记' };
+const IC = { today: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  team: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.9c1.7.8 2.7 2.5 3 5.1"/>',
+  tasks: '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 12 3 3 5-6"/>',
+  habits: '<path d="M17 2.5 21 6.5l-4 4"/><path d="M3 11.5v-1a4 4 0 0 1 4-4h14M7 21.5l-4-4 4-4"/><path d="M21 12.5v1a4 4 0 0 1-4 4H3"/>',
+  chat: '<path d="M21 12a8 8 0 0 1-11.8 7L3 21l1.9-5.3A8 8 0 1 1 21 12Z"/>',
+  review: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  settings: '<path d="M4 6h10M18 6h2M4 12h3M11 12h9M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
+  more: '<path d="M5 12h.01M12 12h.01M19 12h.01"/>', plus: '<path d="M12 5v14M5 12h14"/>' };
+function icon(n, z) { const w = h('span', { style: 'display:inline-flex', 'aria-hidden': 'true' }); z = z || 18;
+  w.innerHTML = '<svg width="' + z + '" height="' + z + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + IC[n] + '</svg>'; return w; }
+let toastT;
+function toast(m) { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 3200); }
+
+/* ---------- state + store ---------- */
+const S = { view: 'today', agents: [], tasks: [], habits: [], notes: [], chats: [], profile: {}, db: null, sample: null, dl: null,
+  mode: 'loading', busy: null, ctl: null, stream: null, pendingUser: null, rt: null, chatAgent: null, chatMode: 'solo',
+  tf: { agent: '', status: 'open' }, nf: '' };
+const COLS = ['agents', 'tasks', 'habits', 'notes', 'chats'];
+const STANDALONE = !(window.claude && window.claude.use), LS = 'equipe-v1';
+function persist() { if (S.db) return; try { localStorage.setItem(LS, JSON.stringify({ profile: S.profile, agents: S.agents, tasks: S.tasks, habits: S.habits, notes: S.notes, chats: S.chats })); } catch (e) {} }
+function restore() { try { const d = JSON.parse(localStorage.getItem(LS) || 'null'); if (!d) return; for (const c of COLS) if (Array.isArray(d[c])) S[c] = d[c]; if (d.profile) S.profile = d.profile; } catch (e) {} }
+let raf = 0;
+function schedule() { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; render(); }); }
+function dbMsg(e) { return e && e.code === 'quota_exceeded' ? '存储已满，请删除一些旧记录' : e && e.code === 'invalid_argument' ? '没有写入权限或数据格式有误' : '保存失败，请稍后再试'; }
+function localSet(col, id, data, merge) {
+  const i = S[col].findIndex(x => x.id === id);
+  if (i < 0) S[col] = [...S[col], { id, ...data }];
+  else S[col] = S[col].map(x => x.id !== id ? x : merge ? { ...x, ...data, ...(data.log ? { log: { ...(x.log || {}), ...data.log } } : {}) } : { id, ...data });
+  persist(); schedule();
+}
+async function put(col, id, data) { if (!S.db) return localSet(col, id, data, false); try { await S.db.collection(col).doc(id).set(data); } catch (e) { toast(dbMsg(e)); } }
+async function patch(col, id, data) { if (!S.db) return localSet(col, id, data, true); try { await S.db.collection(col).doc(id).update(data); } catch (e) { toast(dbMsg(e)); } }
+async function del(col, id) { if (!S.db) { S[col] = S[col].filter(x => x.id !== id); persist(); return schedule(); } try { await S.db.collection(col).doc(id).delete(); } catch (e) { toast(dbMsg(e)); } }
+async function saveProfile(p) { if (!S.db) { S.profile = p; persist(); return schedule(); } try { await S.db.doc('meta/profile').set(p); } catch (e) { toast(dbMsg(e)); } }
+
+function connect(db) {
+  if (!db) { S.mode = 'local'; restore(); return schedule(); }
+  S.db = db; S.mode = 'live';
+  const fail = () => { S.mode = 'error'; schedule(); };
+  for (const c of COLS) db.collection(c).onSnapshot(s => { S[c] = s.docs.map(d => ({ id: d.id, ...d.data() })); schedule(); }, fail);
+  db.doc('meta/profile').onSnapshot(s => { S.profile = s.exists ? { ...s.data() } : {}; schedule(); }, fail);
+  schedule();
+}
+
+/* ---------- selectors ---------- */
+const agents = () => [...S.agents].sort((a, b) => (a.order ?? 99) - (b.order ?? 99) || (a.createdAt || 0) - (b.createdAt || 0));
+const active = () => agents().filter(a => a.active !== false);
+const agentOf = id => S.agents.find(a => a.id === id);
+const lead = () => active().find(a => a.lead) || active()[0];
+const openTasks = id => S.tasks.filter(t => t.agentId === id && t.status !== 'done');
+function streak(hb) { const log = hb.log || {}; let n = 0, i = log[today()] ? 0 : -1; while (log[dayOff(i)]) { n++; i--; } return n; }
+const weekCount = hb => { let n = 0; for (let i = 0; i > -7; i--) if ((hb.log || {})[dayOff(i)]) n++; return n; };
+const isToday = t => t.status === 'done' ? t.doneAt === today() : (t.status === 'doing' || (t.due && t.due <= today()));
+
+/* ---------- AI ---------- */
+const AI_MSG = { not_granted: '你没有允许此页面使用 Claude，AI 功能已关闭', sampling_disabled: '当前账号无法使用 Claude', rate_limited: '调用太频繁或已达用量上限，请稍后再试',
+  session_expired: '登录已过期，请重新登录', refused: 'Claude 拒绝了这个请求，请换个问法', empty_completion: '没有得到回复，请把问题说得更具体',
+  invalid_json: '返回格式不对，请再试一次', prompt_too_large: '内容太长，请精简后再试' };
+const aiMsg = e => AI_MSG[e && e.code] || '连接中断，请稍后再试';
+async function run(label, fn) {
+  if (S.busy) return toast('已有一位 Agent 在工作，请等它完成');
+  if (!S.sample) return toast(STANDALONE ? '公开演示版没有接入 AI' : 'AI 功能需要在 Claude 中打开此页面');
+  S.busy = label; S.ctl = new AbortController(); schedule();
+  try { await fn(S.ctl.signal); }
+  catch (e) { if (!e || e.code !== 'cancelled') { toast(e && e.code ? aiMsg(e) : '出错了，请再试一次'); if (!e || !e.code) console.error(e); } }
+  finally { S.busy = null; S.ctl = null; S.stream = null; S.pendingUser = null; schedule(); }
+}
+function streamTo(key) {
+  S.stream = { key, text: '' };
+  return ({ text }) => { if (!S.stream) return; S.stream.text = text; const e = document.getElementById('stream-' + key); if (e) { e.textContent = text; const l = $('.log'); if (l) l.scrollTop = l.scrollHeight; } else schedule(); };
+}
+const uname = () => S.profile.name || '我';
+function meCtx() { const p = S.profile; return '用户：' + uname() + '\n' + (p.about ? '背景：' + p.about + '\n' : '') + (p.goals ? '当前目标：' + p.goals + '\n' : ''); }
+const taskLine = t => '- [' + ST[t.status] + '] ' + t.title + (t.due ? '（截止 ' + t.due + (t.due < today() && t.status !== 'done' ? '，已逾期' : '') + '）' : '') + (t.priority === 'high' ? ' 高优先' : '');
+function agentBrief(a) {
+  const ts = openTasks(a.id).slice(0, 15).map(taskLine).join('\n') || '- 暂无未完成任务';
+  const hs = S.habits.filter(x => x.agentId === a.id).map(x => '- 习惯 ' + x.name + '：近 7 天完成 ' + weekCount(x) + ' 天，今天' + ((x.log || {})[today()] ? '已打卡' : '未打卡')).join('\n');
+  return ts + (hs ? '\n' + hs : '');
+}
+const STYLE = '回答要求：用中文；具体、可执行、简短；只用纯文本和短横线列表，不用表格和井号标题。';
+function persona(a) {
+  return '你是' + a.name + '，' + uname() + '的个人 Agent 团队成员。职责：' + (a.role || '未填写') + '\n工作指令：' + (a.prompt || '无') + '\n\n' + meCtx() +
+    '今天是 ' + today() + ' ' + wdOf(today()) + '。\n\n你名下的事项：\n' + agentBrief(a) + '\n\n' + STYLE;
+}
+const teamCtx = () => active().map(a => '【' + a.name + '】职责：' + (a.role || '') + '\n' + agentBrief(a)).join('\n\n');
+
+function sendChat(a, text) {
+  run(a.name + ' 正在回复', async signal => {
+    const doc = S.chats.find(c => c.id === a.id); const hist = (doc && doc.messages) || [];
+    S.pendingUser = text;
+    const turns = [{ role: 'user', content: persona(a) }, ...hist.slice(-12).map(m => ({ role: m.role, content: m.content })), { role: 'user', content: text }];
+    const r = await S.sample(turns, { cache: false, signal, onText: streamTo('chat') });
+    const now = Date.now();
+    await put('chats', a.id, { messages: [...hist, { role: 'user', content: text, ts: now }, { role: 'assistant', content: r.text, ts: now }].slice(-30) });
+  });
+}
+function genBrief() {
+  const l = lead(); if (!l) return toast('先新建一位 Agent');
+  run(l.name + ' 正在准备晨会', async signal => {
+    const p = '你是' + l.name + '，' + uname() + '的 Agent 团队主理人。' + (l.prompt || '') + '\n\n' + meCtx() + '今天是 ' + today() + ' ' + wdOf(today()) +
+      '。\n\n团队各成员名下的事项：\n\n' + teamCtx() + '\n\n请写今天的晨会简报，200 字以内：先用一句话说今天的重心；再列出最该先做的 3 件事（注明归哪位 Agent）；最后指出一个风险或逾期项。' + STYLE;
+    const r = await S.sample(p, { cache: false, signal, onText: streamTo('brief') });
+    await put('notes', 'brief-' + today(), { type: 'brief', date: today(), title: '晨会简报', body: r.text, agentId: l.id, createdAt: Date.now() });
+  });
+}
+function genReview() {
+  const a = active().find(x => /复盘/.test(x.name + (x.role || ''))) || lead(); if (!a) return toast('先新建一位 Agent');
+  run(a.name + ' 正在写周复盘', async signal => {
+    const from = dayOff(-6);
+    const done = S.tasks.filter(t => t.status === 'done' && t.doneAt >= from).map(t => '- ' + t.title + '（' + ((agentOf(t.agentId) || {}).name || '未分配') + '）').join('\n') || '- 无';
+    const late = S.tasks.filter(t => t.status !== 'done' && t.due && t.due < today()).map(taskLine).join('\n') || '- 无';
+    const hb = S.habits.map(x => '- ' + x.name + '：' + weekCount(x) + '/7').join('\n') || '- 无';
+    const jr = S.notes.filter(n => n.type === 'journal' && n.date >= from).sort((x, y) => x.date < y.date ? -1 : 1).map(n => n.date + '：' + n.body).join('\n').slice(0, 4000) || '无';
+    const p = '你是' + a.name + '。' + (a.prompt || '') + '\n\n' + meCtx() + '请为 ' + from + ' 到 ' + today() + ' 这一周写复盘。\n\n本周完成的任务：\n' + done + '\n\n逾期未完成：\n' + late +
+      '\n\n习惯打卡：\n' + hb + '\n\n每日随记：\n' + jr + '\n\n按四部分写，300 字以内：本周做成了什么；卡在哪里以及原因；下周最重要的三件事；一条关于节奏的建议。只依据上面的数据，数据不足就直说。' + STYLE;
+    const r = await S.sample(p, { cache: false, signal, onText: streamTo('review') });
+    await put('notes', 'review-' + today(), { type: 'review', date: today(), title: '周复盘 ' + from.slice(5) + ' 至 ' + today().slice(5), body: r.text, agentId: a.id, createdAt: Date.now() });
+  });
+}
+function runRoundtable(q, ids) {
+  const who = active().filter(a => ids.includes(a.id)); if (!who.length) return toast('至少选一位 Agent');
+  run('圆桌讨论进行中', async signal => {
+    S.rt = { q, parts: who.map(a => ({ id: a.id, name: a.name, text: '' })), summary: '', noteId: null }; schedule();
+    for (let i = 0; i < who.length; i++) {
+      const prev = S.rt.parts.slice(0, i).map(p => p.name + '：' + p.text).join('\n\n');
+      const p = persona(who[i]) + '\n\n现在是团队圆桌。议题：' + q + (prev ? '\n\n前面同事的发言：\n' + prev : '') + '\n\n请只从你的职责角度发言，150 字以内：给出判断和一条具体建议；有不同意见就直接说。';
+      const r = await S.sample(p, { cache: false, signal, onText: streamTo('rt-' + i) });
+      S.rt.parts[i].text = r.text; S.stream = null; schedule();
+    }
+    const l = lead();
+    const all = S.rt.parts.map(p => p.name + '：' + p.text).join('\n\n');
+    const p = '你是' + l.name + '，团队主理人。\n' + meCtx() + '\n圆桌议题：' + q + '\n\n各成员发言：\n' + all + '\n\n请收束讨论，200 字以内：一句话结论；不超过 3 条行动项，每条写明由哪位 Agent 跟进和建议期限；需要' + uname() + '本人拍板的事。' + STYLE;
+    const r = await S.sample(p, { cache: false, signal, onText: streamTo('rt-sum') });
+    S.rt.summary = r.text; const id = 'rt-' + uid(); S.rt.noteId = id;
+    await put('notes', id, { type: 'roundtable', date: today(), title: '圆桌：' + q.slice(0, 40), body: all + '\n\n**主理人总结**\n' + r.text, createdAt: Date.now() });
+  });
+}
+function proposeTasks(label, source, fallbackId) {
+  run(label, async signal => {
+    const names = active().map(a => a.name).join('、');
+    const p = '把下面的内容拆成可以直接执行的任务。今天是 ' + today() + '。可分配的 Agent：' + names + '。\n\n内容：\n' + source +
+      '\n\n只回复一个 JSON 数组，最多 8 项，每项形如 {"title":"动词开头的具体任务","agent":"上面某个 Agent 的名字","due":"YYYY-MM-DD 或空字符串","priority":"high 或 normal"}。';
+    const out = await S.sample.json(p, { cache: false, signal });
+    const items = (Array.isArray(out) ? out : []).filter(x => x && x.title).slice(0, 8).map(x => {
+      const a = active().find(y => y.name === x.agent);
+      return { title: String(x.title).slice(0, 120), agentId: a ? a.id : (fallbackId || (lead() || {}).id || ''), due: /^\d{4}-\d{2}-\d{2}$/.test(x.due) ? x.due : '', priority: x.priority === 'high' ? 'high' : 'normal' };
+    });
+    if (!items.length) return toast('没有拆出任务，请把目标写得更具体');
+    proposalModal(items);
+  });
+}
+
+/* ---------- modal ---------- */
+function closeModal() { const v = $('#veil'); v.hidden = true; v.replaceChildren(); }
+function modal(title, body, onSave, saveLabel, extra) {
+  const v = $('#veil');
+  v.replaceChildren(h('form', { class: 'modal', onsubmit: e => { e.preventDefault(); if (onSave() !== false) closeModal(); } },
+    h('h2', null, title), body,
+    h('div', { class: 'row', style: 'justify-content:space-between' }, h('div', { class: 'row' }, extra), h('div', { class: 'row' },
+      h('button', { type: 'button', class: 'btn', onclick: closeModal }, '取消'), h('button', { type: 'submit', class: 'btn primary' }, saveLabel || '保存')))));
+  v.hidden = false; const f = v.querySelector('input,textarea,select'); if (f) f.focus();
+}
+function confirmBtn(label, fn) {
+  let armed = false, t;
+  const b = h('button', { type: 'button', class: 'btn ghost danger', onclick: () => { if (armed) { clearTimeout(t); fn(); } else { armed = true; b.textContent = '再点一次确认'; t = setTimeout(() => { armed = false; b.textContent = label; }, 3000); } } }, label);
+  return b;
+}
+const F = (label, ctl) => h('label', { class: 'f' }, label, ctl);
+const agentSelect = (id, v, withAll) => h('select', { id, value: v || '' }, withAll ? h('option', { value: '' }, withAll) : null, agents().map(a => h('option', { value: a.id }, a.name)));
+
+const TPL = [
+  { name: '', role: '', prompt: '', label: '空白' },
+  { name: '学习教练', role: '拆解学习目标，安排复习节奏，检查进度', prompt: '把大目标拆成每天能完成的小块；每次只给下一步；发现连续拖延时直接指出并调整计划。', label: '学习教练' },
+  { name: '求职参谋', role: '跟进投递进度，准备网申和面试', prompt: '按岗位 JD 给出针对性建议；提醒截止日期；面试前帮我梳理项目经历和常见追问。', label: '求职参谋' },
+  { name: '语言陪练', role: '安排口语、听力和词汇练习', prompt: '每天给一个 15 分钟内能做完的练习；可以直接用目标语言和我对话并纠错。', label: '语言陪练' },
+  { name: '阅读书童', role: '管理书单，督促阅读和做笔记', prompt: '每周确认在读的书和进度；读完后用三个问题帮我回顾要点。', label: '阅读书童' },
+  { name: '运动伙伴', role: '安排每周运动，记录完成情况', prompt: '计划要现实，优先保证频率而不是强度；忙的时候给 10 分钟替代方案。', label: '运动伙伴' },
+  { name: '生活管家', role: '打理日常事务、采购、缴费和出行', prompt: '把琐事合并成批处理；提前提醒有期限的事；不要让琐事占用最好的时间段。', label: '生活管家' },
+];
+function agentModal(a) {
+  const isNew = !a; a = a || { hue: HUES[S.agents.length % HUES.length], active: true };
+  let curHue = a.hue ?? 222;
+  const sw = h('div', { class: 'swatches' }, HUES.map(x => h('button', { type: 'button', 'aria-label': '颜色 ' + x, 'aria-pressed': String(x === curHue), style: 'background:hsl(' + x + ' 58% 46%)',
+    onclick: e => { curHue = x; sw.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', 'false')); e.currentTarget.setAttribute('aria-pressed', 'true'); } })));
+  const body = h('div', { class: 'stack', style: 'gap:12px' },
+    isNew && F('从模板开始', h('select', { id: 'ag-tpl', onchange: e => { const t = TPL[+e.target.value]; $('#ag-name').value = t.name; $('#ag-role').value = t.role; $('#ag-prompt').value = t.prompt; } }, TPL.map((t, i) => h('option', { value: i }, t.label)))),
+    F('名字', h('input', { type: 'text', id: 'ag-name', value: a.name || '', required: true, maxLength: 20, placeholder: '例如：论文教练' })),
+    F('职责（一句话，会显示在通告单上）', h('input', { type: 'text', id: 'ag-role', value: a.role || '', maxLength: 60 })),
+    F('工作指令（它怎么说话、关注什么、不做什么）', h('textarea', { id: 'ag-prompt', rows: 5, value: a.prompt || '', maxLength: 2000 })),
+    F('颜色', sw),
+    h('label', { class: 'row' }, h('input', { type: 'checkbox', id: 'ag-lead', checked: !!a.lead }), '设为主理人（负责晨会简报和圆桌总结）'));
+  modal(isNew ? '新建 Agent' : '编辑 ' + a.name, body, () => {
+    const name = $('#ag-name').value.trim(); if (!name) return false;
+    const data = { name, role: $('#ag-role').value.trim(), prompt: $('#ag-prompt').value.trim(), hue: curHue, lead: $('#ag-lead').checked, active: a.active !== false,
+      order: a.order ?? S.agents.length, createdAt: a.createdAt || Date.now() };
+    if (data.lead) S.agents.filter(x => x.lead && x.id !== a.id).forEach(x => patch('agents', x.id, { lead: false }));
+    put('agents', a.id || uid(), data); toast(isNew ? '已加入团队' : '已保存');
+  }, null, !isNew && confirmBtn('删除这位 Agent', () => { del('agents', a.id); del('chats', a.id); closeModal(); toast('已删除，它名下的任务变为未分配'); }));
+}
+function taskModal(t, presetAgent) {
+  const isNew = !t; t = t || { agentId: presetAgent || (active()[0] || {}).id || '', status: 'todo', priority: 'normal', due: '' };
+  const body = h('div', { class: 'stack', style: 'gap:12px' },
+    F('任务', h('input', { type: 'text', id: 'tk-title', value: t.title || '', required: true, maxLength: 120, placeholder: '动词开头，例如：改完文献综述第二节' })),
+    h('div', { class: 'two' }, F('负责的 Agent', agentSelect('tk-agent', t.agentId, '未分配')), F('截止日', h('input', { type: 'date', id: 'tk-due', value: t.due || '' }))),
+    h('div', { class: 'two' }, F('状态', h('select', { id: 'tk-status', value: t.status }, Object.keys(ST).map(k => h('option', { value: k }, ST[k])))),
+      F('优先级', h('select', { id: 'tk-pri', value: t.priority || 'normal' }, h('option', { value: 'normal' }, '普通'), h('option', { value: 'high' }, '高')))),
+    F('备注', h('textarea', { id: 'tk-note', rows: 2, value: t.note || '', maxLength: 500 })));
+  modal(isNew ? '新建任务' : '编辑任务', body, () => {
+    const title = $('#tk-title').value.trim(); if (!title) return false; const status = $('#tk-status').value;
+    put('tasks', t.id || uid(), { title, agentId: $('#tk-agent').value, due: $('#tk-due').value, status, priority: $('#tk-pri').value, note: $('#tk-note').value.trim(),
+      doneAt: status === 'done' ? (t.doneAt || today()) : '', createdAt: t.createdAt || Date.now() });
+  }, null, !isNew && confirmBtn('删除任务', () => { del('tasks', t.id); closeModal(); }));
+}
+function habitModal(x) {
+  const isNew = !x; x = x || { agentId: (active()[0] || {}).id || '' };
+  const body = h('div', { class: 'stack', style: 'gap:12px' },
+    F('习惯', h('input', { type: 'text', id: 'hb-name', value: x.name || '', required: true, maxLength: 40, placeholder: '例如：法语听力 20 分钟' })),
+    F('由谁督促', agentSelect('hb-agent', x.agentId, '未分配')));
+  modal(isNew ? '新建习惯' : '编辑习惯', body, () => {
+    const name = $('#hb-name').value.trim(); if (!name) return false;
+    put('habits', x.id || uid(), { name, agentId: $('#hb-agent').value, log: { ...(x.log || {}) }, createdAt: x.createdAt || Date.now() });
+  }, null, !isNew && confirmBtn('删除习惯', () => { del('habits', x.id); closeModal(); }));
+}
+function goalModal() {
+  const body = h('div', { class: 'stack', style: 'gap:12px' },
+    F('想达成的目标', h('textarea', { id: 'gl-text', rows: 4, required: true, maxLength: 1000, placeholder: '例如：两周内完成毕业论文方法论章节初稿，约 3000 词' })),
+    h('p', { class: 'sub' }, 'Agent 会把它拆成带负责人和截止日的任务，你确认后才会加入任务列表。'));
+  modal('让 Agent 拆解目标', body, () => { const g = $('#gl-text').value.trim(); if (!g) return false; proposeTasks('正在拆解目标', g); }, '开始拆解');
+}
+function proposalModal(items) {
+  const body = h('div', { class: 'items' }, items.map((it, i) => h('label', { class: 'item' }, h('input', { type: 'checkbox', id: 'pp-' + i, checked: true }),
+    h('span', { class: 't' }, it.title, ' ', h('span', { class: 'meta' }, ((agentOf(it.agentId) || {}).name || '未分配') + (it.due ? ' · ' + it.due.slice(5) : '') + (it.priority === 'high' ? ' · 高' : ''))))));
+  modal('确认要加入的任务', body, () => {
+    let n = 0; items.forEach((it, i) => { if ($('#pp-' + i).checked) { n++; put('tasks', uid(), { ...it, status: 'todo', note: '', doneAt: '', createdAt: Date.now() + i }); } });
+    toast('已加入 ' + n + ' 个任务');
+  }, '加入任务');
+}
+
+/* ---------- small pieces ---------- */
+function aiBtn(label, fn, cls) { return h('button', { type: 'button', class: 'btn ' + (cls || 'ai'), disabled: !S.sample || !!S.busy, title: S.sample ? '' : STANDALONE ? '公开演示版没有接入 AI' : 'AI 功能需要在 Claude 中打开此页面', onclick: fn }, label); }
+const dot = a => h('span', { class: 'dot', style: 'background:' + hue(a), 'aria-hidden': 'true' }, a ? a.name.slice(0, 1) : '?');
+const achip = id => { const a = agentOf(id); return h('span', { class: 'chip' }, h('i', { style: 'background:' + hue(a) }), a ? a.name : '未分配'); };
+function toggleTask(t) { const done = t.status !== 'done'; patch('tasks', t.id, { status: done ? 'done' : 'todo', doneAt: done ? today() : '' }); }
+function taskItem(t, showAgent) {
+  const late = t.status !== 'done' && t.due && t.due < today();
+  return h('div', { class: 'item' + (t.status === 'done' ? ' done' : '') },
+    h('input', { type: 'checkbox', checked: t.status === 'done', 'aria-label': '完成 ' + t.title, onchange: () => toggleTask(t) }),
+    h('span', { class: 't' }, t.title, t.example && h('span', { class: 'chip eg', style: 'margin-left:6px' }, '示例')),
+    t.status === 'doing' && h('span', { class: 'pill' }, '进行中'),
+    t.status !== 'done' && (t.priority === 'high' || late)
+      ? h('span', { class: 'pill late' }, [t.priority === 'high' && '高', late ? '逾期 ' + t.due.slice(5) : t.due === today() ? '今天' : t.due && t.due.slice(5)].filter(Boolean).join(' · '))
+      : t.due ? h('span', { class: 'pill' }, t.due === today() ? '今天' : t.due.slice(5)) : null,
+    showAgent && achip(t.agentId),
+    h('button', { type: 'button', class: 'btn ghost', onclick: () => taskModal(t) }, '编辑'));
+}
+function head(kicker, title, sub, actions) {
+  return h('div', { class: 'head' }, h('div', null, h('div', { class: 'kicker' }, kicker), h('h1', null, title), sub && h('p', { class: 'sub' }, sub)), h('div', { class: 'row' }, actions));
+}
+function streamBox(key, by) { return S.stream && S.stream.key === key ? h('div', { class: 'msg' }, by && h('div', { class: 'by' }, by), h('div', { class: 'rich', id: 'stream-' + key }, S.stream.text || '思考中…')) : null; }
+function tlRow(a, name, tag, content, sum) {
+  return h('div', { class: 'tl-row' }, h('div', { class: 'tl-rail' }, dot(a)), h('div', { class: 'tl-body' },
+    h('div', { class: 'row' }, h('b', null, name), tag && h('span', { class: 'meta' }, tag)), content && h('div', { class: 'msg' + (sum ? ' sum' : '') }, content)));
+}
+function loadDemo() {
+  const t = today(), now = Date.now();
+  [['lead', '主理人', '统筹全局，排优先级，主持晨会和圆桌', '像制片人一样看全局：先看期限和依赖，再定今天的重心。每次最多给三件事。', 222, true],
+   ['career', '求职参谋', '跟进投递、网申和面试准备', '按岗位 JD 给针对性建议，提醒截止日，面试前帮我梳理项目经历。', 32, false],
+   ['thesis', '论文教练', '把论文章节拆成每天的写作量', '每次只给下一步；连续几天没有进展时直接指出，并把计划调小。', 330, false],
+   ['lang', '语言陪练', '安排外语的日常练习', '每天给一个 15 到 20 分钟能做完的练习；我用外语说话时用同一种语言回复并纠错。', 180, false],
+   ['life', '生活管家', '打理日常事务、运动和采购', '把琐事合并成批处理，提前提醒有期限的事。', 150, false],
+   ['review', '复盘官', '写周复盘，找出卡点和规律', '只依据任务、打卡和随记的数据说话，数据不足时直接说明。', 262, false]
+  ].forEach((a, i) => put('agents', a[0], { name: a[1], role: a[2], prompt: a[3], hue: a[4], lead: a[5], active: true, order: i, createdAt: now + i }));
+  [['eg1', '在设置页写下背景和当前目标', 'lead', t, 'high'], ['eg2', '整理本周要投的岗位清单和截止日', 'career', t, 'normal'], ['eg3', '列出论文各章节的完成度和下一步', 'thesis', dayOff(1), 'normal']
+  ].forEach((x, i) => put('tasks', x[0], { title: x[1], agentId: x[2], due: x[3], status: 'todo', priority: x[4], note: '', doneAt: '', example: true, createdAt: now + 10 + i }));
+  put('habits', 'eg1', { name: '外语听力 20 分钟', agentId: 'lang', log: {}, example: true, createdAt: now + 20 });
+  put('habits', 'eg2', { name: '运动 30 分钟', agentId: 'life', log: { [dayOff(-1)]: true }, example: true, createdAt: now + 21 });
+  toast('已载入示例团队，可以随意修改或删除');
+}
+function emptyTeam() { return h('div', { class: 'panel' }, h('h2', null, '团队还是空的'), h('p', { class: 'sub' }, '先新建第一位 Agent：给它一个名字、一句职责和几行工作指令，它就会出现在通告单上。也可以载入一支示例团队，再按自己的情况改。'),
+  h('div', { class: 'row', style: 'margin-top:12px' }, h('button', { type: 'button', class: 'btn primary', onclick: loadDemo }, '载入示例团队'), h('button', { type: 'button', class: 'btn', onclick: () => agentModal() }, '新建 Agent'))); }
+
+/* ---------- views ---------- */
+const VIEWS = {
+  today() {
+    const t = today(), list = S.tasks.filter(isToday), doneN = list.filter(x => x.status === 'done').length;
+    const hbLeft = S.habits.filter(x => !(x.log || {})[t]).length, late = S.tasks.filter(x => x.status !== 'done' && x.due && x.due < t).length;
+    const brief = S.notes.find(n => n.id === 'brief-' + t), journal = S.notes.find(n => n.id === 'journal-' + t);
+    const hr = new Date().getHours(), hi = (hr < 11 ? '早上好' : hr < 13 ? '中午好' : hr < 18 ? '下午好' : '晚上好') + (S.profile.name ? '，' + S.profile.name : '');
+    const sub = (list.length ? '今天 ' + list.length + ' 项通告，已完成 ' + doneN + ' 项' : '今天没有到期的任务') + (late ? '；' + late + ' 项已逾期' : '') +
+      (hbLeft ? '；还有 ' + hbLeft + ' 个习惯没打卡' : S.habits.length ? '；习惯已全部打卡' : '') + '。';
+    const segN = Math.min(list.length, 14), segOn = list.length ? Math.round(doneN / list.length * segN) : 0;
+    const rows = active().map(a => {
+      const ts = list.filter(x => x.agentId === a.id).sort((x, y) => (x.status === 'done') - (y.status === 'done') || (x.due || '9').localeCompare(y.due || '9'));
+      const hs = S.habits.filter(x => x.agentId === a.id);
+      return h('div', { class: 'call' },
+        h('div', { class: 'who' }, dot(a), h('div', { class: 'gx' }, h('b', null, a.name, a.lead && h('span', { class: 'meta' }, ' 主理人')), h('small', null, a.role)),
+          h('button', { type: 'button', class: 'btn ghost icon', 'aria-label': '给' + a.name + '加任务', title: '加任务', onclick: () => taskModal(null, a.id) }, icon('plus', 16)),
+          h('button', { type: 'button', class: 'btn ghost icon', 'aria-label': '找' + a.name + '对话', title: '对话', onclick: () => { S.chatAgent = a.id; S.chatMode = 'solo'; go('chat'); } }, icon('chat', 16))),
+        h('div', { class: 'items' }, ts.map(x => taskItem(x)), !ts.length && !hs.length && h('span', { class: 'idle', style: 'min-height:34px;display:flex;align-items:center' }, '今天没有通告'),
+          hs.length ? h('div', { class: 'row', style: 'margin-top:2px' }, hs.map(x => h('button', { type: 'button', class: 'chip hb' + ((x.log || {})[t] ? ' on' : ''), 'aria-pressed': String(!!(x.log || {})[t]),
+            onclick: () => patch('habits', x.id, { log: { [t]: !(x.log || {})[t] } }) }, ((x.log || {})[t] ? '已打卡 · ' : '打卡 · ') + x.name))) : null));
+    });
+    const orphan = list.filter(x => !agentOf(x.agentId));
+    const qsel = agentSelect('qa-agent', (active()[0] || {}).id); qsel.setAttribute('aria-label', '负责的 Agent');
+    return h('div', { class: 'stack', style: 'gap:22px' },
+      h('div', { class: 'head', style: 'margin-bottom:0' },
+        h('div', null, h('div', { class: 'kicker' }, 'Call sheet · ' + t.replace(/-/g, '.') + ' ' + wdOf(t)), h('h1', null, hi), h('p', { class: 'sub' }, sub)),
+        list.length ? h('div', { class: 'prog' }, h('div', { class: 'prog-top' }, h('span', null, '今日进度'), h('b', null, doneN + '/' + list.length)),
+          h('div', { class: 'segs', role: 'img', 'aria-label': list.length + ' 项任务完成 ' + doneN + ' 项' }, Array.from({ length: segN }, (_, i) => h('i', { class: i < segOn ? 'on' : '' })))) : null),
+      !S.agents.length ? emptyTeam() : [
+        h('form', { class: 'quick', onsubmit: e => { e.preventDefault(); const i = $('#qa-text'), v = i.value.trim(); if (!v) return;
+            put('tasks', uid(), { title: v.slice(0, 120), agentId: $('#qa-agent').value, due: t, status: 'todo', priority: 'normal', note: '', doneAt: '', createdAt: Date.now() }); i.value = ''; toast('已加入今天的通告'); } },
+          h('input', { type: 'text', id: 'qa-text', 'aria-label': '快速添加任务', placeholder: '加一个今天要做的任务，回车保存', maxLength: 120 }), qsel,
+          h('button', { type: 'submit', class: 'btn primary' }, '添加')),
+        h('div', { class: 'cols' },
+          h('div', { class: 'col-main sheet' }, h('div', { class: 'sheet-head' }, h('span', null, '角色'), h('span', null, '今日通告')), rows,
+            orphan.length ? h('div', { class: 'call' }, h('div', { class: 'who' }, dot(null), h('div', { class: 'gx' }, h('b', null, '未分配'), h('small', null, '还没有 Agent 认领'))), h('div', { class: 'items' }, orphan.map(x => taskItem(x)))) : null),
+          h('div', { class: 'col-side' },
+            h('div', { class: 'dark' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', null, '晨会简报'), h('span', { class: 'tag' }, (lead() || {}).name || '')),
+              S.stream && S.stream.key === 'brief' ? h('div', { class: 'rich', id: 'stream-brief' }, S.stream.text || '思考中…') : brief ? rich(brief.body)
+                : h('div', { class: 'rich' }, '还没开晨会。主理人会读全队的事项，给出今天的重心和最该先做的三件事。'),
+              h('div', { class: 'row' }, aiBtn(brief ? '重新生成' : '开晨会', genBrief))),
+            h('div', { class: 'panel stack', style: 'gap:10px' }, h('h2', null, '今日随记'),
+              h('textarea', { id: 'journal', rows: 4, maxLength: 2000, 'aria-label': '今日随记', placeholder: '今天做了什么、卡在哪里、明天想先做什么', value: journal ? journal.body : '' }),
+              h('div', { class: 'row', style: 'justify-content:space-between' }, h('span', { class: 'idle', style: 'font-size:12px' }, '周复盘会读这里'),
+                h('button', { type: 'button', class: 'btn', onclick: () => { const v = $('#journal').value.trim(); if (!v) return toast('先写点什么');
+                  put('notes', 'journal-' + t, { type: 'journal', date: t, title: '随记 ' + t, body: v, createdAt: (journal && journal.createdAt) || Date.now() }); toast('已保存'); } }, '保存')))))]);
+  },
+  team() {
+    return h('div', { class: 'stack' },
+      head('Team', 'Agent 团队', '每位 Agent 管一条线。名字、职责、工作指令都由你定义，随时能改。', h('button', { type: 'button', class: 'btn primary', onclick: () => agentModal() }, '新建 Agent')),
+      !S.agents.length ? emptyTeam() : h('div', { class: 'cards' }, agents().map(a => h('div', { class: 'card' + (a.active === false ? ' off' : '') },
+        h('div', { class: 'who' }, dot(a), h('div', null, h('b', null, a.name, a.lead && h('span', { class: 'meta' }, ' 主理人')), h('small', null, a.role || '还没写职责'))),
+        h('p', null, (a.prompt || '还没写工作指令').slice(0, 90) + ((a.prompt || '').length > 90 ? '…' : '')),
+        h('div', { class: 'row' }, h('span', { class: 'chip' }, openTasks(a.id).length + ' 个未完成任务'), h('span', { class: 'chip' }, S.habits.filter(x => x.agentId === a.id).length + ' 个习惯')),
+        h('div', { class: 'foot' },
+          h('label', { class: 'row', style: 'font-size:12px;color:var(--muted)' }, h('input', { type: 'checkbox', checked: a.active !== false, onchange: e => patch('agents', a.id, { active: e.target.checked }) }), '在岗'),
+          h('div', { class: 'row' }, h('button', { type: 'button', class: 'btn ghost', onclick: () => agentModal(a) }, '编辑'),
+            h('button', { type: 'button', class: 'btn', disabled: a.active === false, onclick: () => { S.chatAgent = a.id; S.chatMode = 'solo'; go('chat'); } }, '对话')))))));
+  },
+  tasks() {
+    const f = S.tf; let ts = S.tasks.filter(t => (!f.agent || t.agentId === f.agent) && (f.status === 'all' || (f.status === 'open' ? t.status !== 'done' : t.status === 'done')));
+    ts.sort((a, b) => f.status === 'done' ? (b.doneAt || '').localeCompare(a.doneAt || '') : (a.due || '9999').localeCompare(b.due || '9999') || (a.createdAt || 0) - (b.createdAt || 0));
+    return h('div', { class: 'stack' },
+      head('Tasks', '任务', null, [aiBtn('让 Agent 拆解目标', goalModal), h('button', { type: 'button', class: 'btn primary', onclick: () => taskModal() }, '新建任务')]),
+      h('div', { class: 'row' },
+        h('div', { class: 'tabs' }, [['open', '未完成'], ['done', '已完成'], ['all', '全部']].map(([k, l]) => h('button', { type: 'button', 'aria-pressed': String(f.status === k), onclick: () => { f.status = k; schedule(); } }, l))),
+        h('div', { style: 'width:170px' }, agentSelect('tf-agent', f.agent, '全部 Agent'))),
+      ts.length ? h('div', { class: 'list' }, ts.map(t => taskItem(t, true))) : h('div', { class: 'panel idle' }, f.status === 'done' ? '还没有完成的任务。' : '这里没有任务。新建一个，或让 Agent 把一个目标拆开。'));
+  },
+  habits() {
+    const days = [-6, -5, -4, -3, -2, -1, 0].map(dayOff);
+    return h('div', { class: 'stack' },
+      head('Habits', '习惯', '点方格可以补打或取消最近 7 天的记录。', h('button', { type: 'button', class: 'btn primary', onclick: () => habitModal() }, '新建习惯')),
+      S.habits.length ? h('div', { class: 'list' }, [...S.habits].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)).map(x => h('div', { class: 'item' },
+        h('span', { class: 't' }, h('b', null, x.name), x.example && h('span', { class: 'chip eg', style: 'margin-left:6px' }, '示例')), achip(x.agentId),
+        h('div', { class: 'week' }, days.map(d => h('button', { type: 'button', class: ((x.log || {})[d] ? 'on' : '') + (d === today() ? ' today' : ''), 'aria-pressed': String(!!(x.log || {})[d]), 'aria-label': x.name + ' ' + d,
+          onclick: () => patch('habits', x.id, { log: { [d]: !(x.log || {})[d] } }) }, wdOf(d).slice(1), h('br'), d.slice(8)))),
+        h('span', { class: 'meta' }, '连续 ' + streak(x) + ' 天'),
+        h('button', { type: 'button', class: 'btn ghost', onclick: () => habitModal(x) }, '编辑')))) : h('div', { class: 'panel idle' }, '还没有习惯。新建一个并指定督促它的 Agent。'));
+  },
+  chat() {
+    const as = active(); if (!as.length) return h('div', { class: 'stack' }, head('Talk', '对话'), emptyTeam());
+    if (!as.find(a => a.id === S.chatAgent)) S.chatAgent = as[0].id;
+    const a = agentOf(S.chatAgent), doc = S.chats.find(c => c.id === a.id), hist = (doc && doc.messages) || [];
+    const modeTabs = h('div', { class: 'tabs' }, [['solo', '单聊'], ['round', '圆桌']].map(([k, l]) => h('button', { type: 'button', 'aria-pressed': String(S.chatMode === k), onclick: () => { S.chatMode = k; schedule(); } }, l)));
+    const noAI = !S.sample && h('div', { class: 'banner' }, S.mode === 'loading' ? '正在连接 Claude…' : STANDALONE ? '这是公开演示版，没有接入 AI。单聊、圆桌、晨会、拆解目标和周复盘在 Claude 内运行的版本里可用；这里可以体验团队、任务、习惯和随记。' : 'AI 对话需要在 Claude 中打开此页面，并在首次使用时允许它调用 Claude。');
+    if (S.chatMode === 'round') {
+      const rt = S.rt, off = S.rtOff || (S.rtOff = {});
+      return h('div', { class: 'stack' }, head('Talk', '圆桌', '几位 Agent 依次发言，后发言的能看到前面的意见，主理人最后收束。', modeTabs), noAI,
+        h('div', { class: 'panel stack', style: 'gap:14px' },
+          h('div', { class: 'row' }, as.map(x => h('button', { type: 'button', class: 'pick', 'aria-pressed': String(!off[x.id]), onclick: () => { off[x.id] = !off[x.id]; schedule(); } }, dot(x), x.name))),
+          h('textarea', { id: 'rt-q', rows: 2, maxLength: 600, 'aria-label': '议题', placeholder: '例如：下周有两场面试，论文初稿也要交，时间怎么排？' }),
+          h('div', { class: 'row' }, aiBtn('开始圆桌', () => { const q = $('#rt-q').value.trim(); if (!q) return toast('先写下议题'); runRoundtable(q, as.filter(x => !off[x.id]).map(x => x.id)); }))),
+        rt && h('div', { class: 'stack', style: 'gap:14px' }, h('div', { class: 'msg me' }, rt.q),
+          h('div', { class: 'tl' },
+            rt.parts.map((p, i) => { const live = S.stream && S.stream.key === 'rt-' + i;
+              return tlRow(agentOf(p.id), p.name, p.text ? '第 ' + (i + 1) + ' 位' : live ? '正在发言' : '等待发言',
+                p.text ? rich(p.text) : live ? h('div', { class: 'rich', id: 'stream-rt-' + i }, S.stream.text || '思考中…') : null); }),
+            tlRow(lead(), '主理人总结', rt.summary ? '' : '等前面发言结束',
+              rt.summary ? rich(rt.summary) : S.stream && S.stream.key === 'rt-sum' ? h('div', { class: 'rich', id: 'stream-rt-sum' }, S.stream.text || '思考中…') : null, true)),
+          rt.summary && h('div', { class: 'row' }, aiBtn('把行动项变成任务', () => proposeTasks('正在提取行动项', rt.summary)), h('span', { class: 'idle' }, '纪要已存入复盘页。'))));
+    }
+    return h('div', { class: 'stack' }, head('Talk', '对话', null, modeTabs), noAI,
+      h('div', { class: 'row' }, as.map(x => h('button', { type: 'button', class: 'chip', style: x.id === a.id ? 'border-color:var(--ink);font-weight:600' : '', 'aria-pressed': String(x.id === a.id), onclick: () => { S.chatAgent = x.id; schedule(); } }, h('i', { style: 'background:' + hue(x) }), x.name))),
+      h('div', { class: 'panel chat' },
+        h('div', { class: 'who' }, dot(a), h('div', null, h('b', null, a.name), h('small', null, (a.role || '') + ' · 它能看到名下 ' + openTasks(a.id).length + ' 个未完成任务'))),
+        h('div', { class: 'log' }, !hist.length && !S.pendingUser && h('span', { class: 'idle' }, '还没有对话。可以问它：今天先做哪件事？'),
+          hist.map(m => h('div', { class: 'msg' + (m.role === 'user' ? ' me' : '') }, rich(m.content))),
+          S.pendingUser && S.stream && S.stream.key === 'chat' && [h('div', { class: 'msg me' }, S.pendingUser), streamBox('chat')]),
+        h('textarea', { id: 'chat-in', rows: 2, maxLength: 2000, placeholder: '对 ' + a.name + ' 说…（Ctrl/⌘ + Enter 发送）', onkeydown: e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $('#chat-send').click(); } } }),
+        h('div', { class: 'row', style: 'justify-content:space-between' },
+          h('div', { class: 'row' }, h('button', { type: 'button', id: 'chat-send', class: 'btn ai', disabled: !S.sample || !!S.busy, onclick: () => { const i = $('#chat-in'), v = i.value.trim(); if (!v) return; i.value = ''; sendChat(a, v); } }, '发送'),
+            hist.length ? aiBtn('把最近的回复变成任务', () => proposeTasks('正在提取任务', hist[hist.length - 1].content, a.id), '') : null),
+          hist.length ? confirmBtn('清空对话', () => del('chats', a.id)) : null)));
+  },
+  review() {
+    const ns = S.notes.filter(n => !S.nf || n.type === S.nf).sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.createdAt || 0) - (a.createdAt || 0));
+    const from = dayOff(-6), doneW = S.tasks.filter(t => t.status === 'done' && t.doneAt >= from).length;
+    const rate = S.habits.length ? Math.round(S.habits.reduce((s, x) => s + weekCount(x), 0) / (S.habits.length * 7) * 100) : 0;
+    return h('div', { class: 'stack' },
+      head('Review', '复盘', '周复盘读取最近 7 天完成的任务、逾期项、习惯打卡和每日随记。', aiBtn('生成本周复盘', genReview)),
+      h('div', { class: 'stats' }, h('div', { class: 'stat' }, h('b', null, doneW), h('span', null, '近 7 天完成任务')), h('div', { class: 'stat' }, h('b', null, rate + '%'), h('span', null, '近 7 天习惯完成率')),
+        h('div', { class: 'stat' }, h('b', null, S.notes.filter(n => n.type === 'journal' && n.date >= from).length + '/7'), h('span', null, '随记天数'))),
+      S.stream && S.stream.key === 'review' && h('div', { class: 'panel' }, h('h2', null, '正在生成'), streamBox('review')),
+      h('div', { class: 'row' }, h('div', { class: 'tabs' }, [['', '全部'], ['review', '周复盘'], ['brief', '晨会'], ['roundtable', '圆桌'], ['journal', '随记']].map(([k, l]) => h('button', { type: 'button', 'aria-pressed': String(S.nf === k), onclick: () => { S.nf = k; schedule(); } }, l)))),
+      ns.length ? h('div', { class: 'panel' }, ns.slice(0, 60).map(n => h('div', { class: 'note' },
+        h('div', { class: 'row', style: 'justify-content:space-between' }, h('div', { class: 'row' }, h('b', null, n.title || NOTE_T[n.type]), h('span', { class: 'chip' }, NOTE_T[n.type] || n.type), h('span', { class: 'meta' }, n.date)), confirmBtn('删除', () => del('notes', n.id))),
+        rich(n.body)))) : h('div', { class: 'panel idle' }, '还没有记录。在今日页写随记、开晨会，或在对话页开一次圆桌，都会存到这里。'));
+  },
+  more() {
+    return h('div', { class: 'stack' }, head('More', '更多'),
+      h('div', { class: 'list more' }, [['team', '团队', '新建和编辑 Agent'], ['review', '复盘', '周复盘、晨会和圆桌记录'], ['settings', '设置', '关于我、数据导出']].map(([k, l, d]) =>
+        h('button', { type: 'button', onclick: () => go(k) }, icon(k, 20), h('span', { class: 'gx' }, h('b', null, l), h('small', { class: 'idle', style: 'display:block' }, d))))));
+  },
+  settings() {
+    const p = S.profile, modeTxt = { live: '已连接，数据自动保存到这个页面的存储里', local: '数据保存在当前浏览器里，清除浏览器数据会丢失，建议定期导出备份', loading: '正在连接…', error: '存储连接中断，请刷新页面' }[S.mode];
+    return h('div', { class: 'stack' }, head('Settings', '设置'),
+      h('div', { class: 'panel stack', style: 'gap:12px' }, h('h2', null, '关于我'), h('p', { class: 'sub' }, '每位 Agent 开口前都会读到这三项。写得越具体，它们的建议越贴近你。'),
+        F('怎么称呼你', h('input', { type: 'text', id: 'pf-name', value: p.name || '', maxLength: 30 })),
+        F('背景', h('textarea', { id: 'pf-about', rows: 3, maxLength: 1500, value: p.about || '', placeholder: '在读什么、做过什么、平时的作息' })),
+        F('当前目标', h('textarea', { id: 'pf-goals', rows: 3, maxLength: 1500, value: p.goals || '', placeholder: '这一两个月最想做成的事，带上期限' })),
+        h('div', { class: 'row' }, h('button', { type: 'button', class: 'btn primary', onclick: () => { saveProfile({ name: $('#pf-name').value.trim(), about: $('#pf-about').value.trim(), goals: $('#pf-goals').value.trim() }); toast('已保存'); } }, '保存'))),
+      h('div', { class: 'panel stack', style: 'gap:10px' }, h('h2', null, '数据'),
+        h('p', { class: 'sub' }, '存储：' + modeTxt + '。AI：' + (S.sample ? '可用，调用会计入你自己的 Claude 用量' : STANDALONE ? '公开演示版没有接入' : '当前不可用') + '。'),
+        h('p', { class: 'sub' }, S.agents.length + ' 位 Agent · ' + S.tasks.length + ' 个任务 · ' + S.habits.length + ' 个习惯 · ' + S.notes.length + ' 条记录'),
+        h('div', { class: 'row' }, h('button', { type: 'button', class: 'btn', onclick: async () => {
+          const name = 'equipe-backup-' + today() + '.json', data = JSON.stringify({ exportedAt: new Date().toISOString(), profile: S.profile, agents: S.agents, tasks: S.tasks, habits: S.habits, notes: S.notes, chats: S.chats }, null, 2);
+          if (!S.dl) { const a = h('a', { href: URL.createObjectURL(new Blob([data], { type: 'application/json' })), download: name }); document.body.append(a); a.click(); a.remove(); return; }
+          try { await S.dl.save({ filename: name, data }); toast('已导出'); } catch (e) { if (!e || e.code !== 'declined') toast('导出失败'); } } }, '导出全部数据（JSON）'),
+          h('label', { class: 'btn', style: 'cursor:pointer' }, '从备份导入', h('input', { type: 'file', accept: '.json,application/json', hidden: true, onchange: e => {
+            const f = e.target.files[0]; if (!f) return; const r = new FileReader();
+            r.onload = () => { try { const d = JSON.parse(r.result); let n = 0;
+                for (const c of COLS) for (const x of (Array.isArray(d[c]) ? d[c] : [])) { if (!x || !x.id) continue; const { id, ...rest } = x; put(c, String(id), rest); n++; }
+                if (d.profile && typeof d.profile === 'object') saveProfile(d.profile); toast('已导入 ' + n + ' 条记录'); } catch (x) { toast('这个文件不是有效的备份'); } };
+            r.readAsText(f); e.target.value = ''; } })))));
+  },
+};
+const NAV = [['today', '今日', ''], ['team', '团队', 'd-only'], ['tasks', '任务', ''], ['habits', '习惯', ''], ['chat', '对话', ''], ['review', '复盘', 'd-only'], ['settings', '设置', 'd-only'], ['more', '更多', 'm-only']];
+function go(v) { S.view = v; try { history.replaceState(null, '', '#' + v); } catch (e) {} render(); window.scrollTo(0, 0); }
+
+function render() {
+  const main = $('#main'), keep = {};
+  main.querySelectorAll('input[id],textarea[id],select[id]').forEach(e => { if (e.type !== 'checkbox') keep[e.id] = e.value; });
+  const act = document.activeElement, actId = act && main.contains(act) ? act.id : '';
+  const sel = actId && act.selectionStart != null ? [act.selectionStart, act.selectionEnd] : null;
+  const view = VIEWS[S.view]();
+  main.replaceChildren(S.mode === 'local' && STANDALONE && !S.agents.length ? h('div', { class: 'banner', style: 'margin-bottom:16px' }, '这是公开演示版：数据只保存在你的浏览器里，没有接入 AI。') : S.mode === 'error' ? h('div', { class: 'banner', style: 'margin-bottom:16px' }, '存储连接中断，请刷新页面。') : '', view);
+  for (const id in keep) { const e = document.getElementById(id); if (e && main.contains(e)) e.value = keep[id]; }
+  const ta = $('#tf-agent'); if (ta) ta.onchange = () => { S.tf.agent = ta.value; schedule(); };
+  if (actId) { const e = document.getElementById(actId); if (e) { e.focus(); if (sel) try { e.setSelectionRange(sel[0], sel[1]); } catch (x) {} } }
+  const log = $('.log'); if (log) log.scrollTop = log.scrollHeight;
+  const cnt = { today: S.tasks.filter(x => isToday(x) && x.status !== 'done').length, tasks: S.tasks.filter(x => x.status !== 'done').length, team: S.agents.length };
+  $('#nav').replaceChildren(...NAV.map(([k, l, c]) => h('button', { type: 'button', class: c, 'aria-current': S.view === k || (k === 'more' && ['team', 'review', 'settings'].includes(S.view)) ? 'page' : null, onclick: () => go(k) },
+    icon(k), h('span', { class: 'lb' }, l), cnt[k] ? h('span', { class: 'ct' }, cnt[k]) : null)));
+  $('#me-name').textContent = S.profile.name || '我'; $('#me-dot').textContent = (S.profile.name || '我').slice(0, 1);
+  $('#status').textContent = { live: '数据已同步', local: '保存在本浏览器', loading: '连接中…', error: '连接中断' }[S.mode] + (S.sample ? ' · AI 可用' : '');
+  $('#busy').hidden = !S.busy; $('#busy-text').textContent = S.busy ? S.busy + '…' : '';
+}
+$('#busy-stop').onclick = () => S.ctl && S.ctl.abort();
+$('#veil').addEventListener('mousedown', e => { if (e.target.id === 'veil') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#veil').hidden) closeModal(); });
+
+const hv = location.hash.slice(1); if (VIEWS[hv]) S.view = hv;
+render();
+if (window.claude && window.claude.use) {
+  claude.use('db').then(connect, () => connect(null));
+  claude.use('sample').then(s => { S.sample = s; schedule(); }, () => {});
+  claude.use('downloads').then(d => { S.dl = d; schedule(); }, () => {});
+} else connect(null);
+</script>
+</body>
+</html>
