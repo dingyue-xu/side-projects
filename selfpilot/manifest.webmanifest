@@ -1,0 +1,12 @@
+{
+  "name": "自驱舱 SelfPilot",
+  "short_name": "自驱舱",
+  "description": "给自己用的学习与生活多智能体管理平台",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f3f5f7",
+  "theme_color": "#3b6fd8",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

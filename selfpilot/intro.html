@@ -1,0 +1,293 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>自驱舱 SelfPilot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* 布局：仪表舱 —— 左文右“驾驶舱屏幕”的首屏，下接按功能分区的窄栏正文 */
+:root{
+  --bg:#eef1f4; --surface:#ffffff; --sunk:#e4e9ee; --ink:#0f1d2b; --muted:#506172; --line:#d3dbe3;
+  --accent:#2456c9; --accent-soft:#dfe8fa; --needle:#d4861a; --ok:#23845a;
+  --display:'Noto Serif SC','Songti SC',serif; --body:'Noto Sans SC','PingFang SC','Microsoft YaHei',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c141c; --surface:#131e29; --sunk:#0f1923; --ink:#e3eaf1; --muted:#93a4b5; --line:#22313f;
+  --accent:#86a8f2; --accent-soft:#1a2a45; --needle:#f0aa45; --ok:#5ccf98; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c141c; --surface:#131e29; --sunk:#0f1923; --ink:#e3eaf1; --muted:#93a4b5; --line:#22313f;
+  --accent:#86a8f2; --accent-soft:#1a2a45; --needle:#f0aa45; --ok:#5ccf98; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.75 var(--body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:20px;padding-block:0 72px}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.25}
+h2{font-size:clamp(24px,3.2vw,32px);font-weight:900}
+h3{font-size:18px;font-weight:600}
+p{margin:0}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--needle)}
+.mono{font-family:var(--mono)}
+.muted{color:var(--muted)}
+section{display:flex;flex-direction:column;gap:22px;padding-block:56px 8px;border-top:1px solid var(--line)}
+.lede{max-width:62ch;color:var(--muted)}
+
+/* 首屏 */
+.hero{display:grid;grid-template-columns:1.05fr 1fr;gap:44px;align-items:center;padding-block:64px 56px}
+.hero h1{font-size:clamp(40px,6vw,68px);font-weight:900;letter-spacing:.02em}
+.hero h1 small{display:block;font:500 15px/1.4 var(--mono);letter-spacing:.2em;color:var(--muted);margin-top:10px}
+.thesis{font-size:clamp(18px,2vw,21px);margin-top:22px;max-width:30ch;font-family:var(--display);font-weight:600}
+.hero .lede{margin-top:14px}
+.ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;text-decoration:none;font-weight:500;border:1px solid var(--line);color:var(--ink);background:var(--surface)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.facts{display:flex;gap:28px;flex-wrap:wrap;margin-top:30px}
+.facts div{display:flex;flex-direction:column}
+.facts b{font:600 24px/1.2 var(--mono);font-variant-numeric:tabular-nums}
+.facts span{font-size:13px;color:var(--muted)}
+
+/* 驾驶舱屏幕：一段真实的圆桌对话 */
+.screen{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0;box-shadow:0 18px 40px -24px rgba(15,29,43,.35)}
+.screen-h{display:flex;justify-content:space-between;align-items:center;font:12px var(--mono);color:var(--muted);padding-bottom:10px;border-bottom:1px dashed var(--line)}
+.u{align-self:flex-end;background:var(--accent);color:var(--bg);padding:9px 14px;border-radius:14px 14px 4px 14px;max-width:88%;font-size:14px}
+.route{align-self:center;font:12px var(--mono);color:var(--needle)}
+.m{display:flex;gap:10px;align-items:flex-start;min-width:0}
+.av{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--sunk);flex:none;font-size:16px}
+.m .b{background:var(--sunk);border-radius:4px 14px 14px 14px;padding:8px 12px;font-size:14px;min-width:0}
+.m .who{font-size:12px;color:var(--muted)}
+.act{display:flex;gap:6px;font:12px var(--mono);color:var(--ok);margin-top:4px}
+
+/* 痛点三栏 */
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.three>div{display:flex;flex-direction:column;gap:8px;min-width:0}
+.three h3::before{content:"";display:block;width:28px;height:3px;background:var(--needle);margin-bottom:12px}
+
+/* 权限矩阵 */
+.matrix{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.matrix table{border-collapse:collapse;width:100%;min-width:720px;font-size:14px}
+.matrix th,.matrix td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:center}
+.matrix tr:last-child td{border-bottom:0}
+.matrix th{font:500 12px var(--mono);color:var(--muted);letter-spacing:.06em}
+.matrix td:first-child,.matrix th:first-child{text-align:left;white-space:nowrap}
+.matrix td.role{text-align:left;color:var(--muted);font-size:13px;min-width:200px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.dot.off{background:none;border:1.5px solid var(--line)}
+
+/* 流程 */
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:0;counter-reset:s}
+.flow>div{position:relative;padding:18px 16px 18px 0;display:flex;flex-direction:column;gap:6px;min-width:0}
+.flow>div::before{counter-increment:s;content:counter(s,decimal-leading-zero);font:600 13px var(--mono);color:var(--needle)}
+.flow>div::after{content:"";position:absolute;top:28px;left:34px;right:12px;height:1px;background:var(--line)}
+.flow>div:last-child::after{display:none}
+.flow p{font-size:14px;color:var(--muted)}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.mode{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.mode code{font:12px var(--mono);color:var(--accent)}
+.mode p{font-size:14px;color:var(--muted)}
+
+pre{margin:0;background:var(--sunk);border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto;font:13px/1.65 var(--mono)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.split>*{min-width:0}
+.guards{display:flex;flex-direction:column;gap:14px}
+.guards div{display:grid;grid-template-columns:72px 1fr;gap:12px}
+.guards b{font:600 13px var(--mono);color:var(--needle)}
+
+/* 一天 */
+.day{display:flex;flex-direction:column}
+.day>div{display:grid;grid-template-columns:110px 1fr;gap:20px;padding-block:16px;border-bottom:1px solid var(--line)}
+.day>div:last-child{border-bottom:0}
+.day time{font:600 20px/1.3 var(--mono);font-variant-numeric:tabular-nums;color:var(--accent)}
+.day h3{font-size:16px;margin-bottom:2px}
+.day p{color:var(--muted);font-size:15px}
+
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.tbl table{border-collapse:collapse;width:100%;min-width:620px;font-size:14px}
+.tbl th,.tbl td{padding:11px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.tbl th{font:500 12px var(--mono);color:var(--muted);letter-spacing:.06em}
+.tbl code{font:13px var(--mono)}
+.yes{color:var(--ok)} .no{color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips span{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:14px}
+footer{margin-top:56px;padding-top:24px;border-top:1px solid var(--line);color:var(--muted);font-size:14px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+@media (max-width:860px){
+  .hero,.split{grid-template-columns:1fr}
+  .three{grid-template-columns:1fr}
+  .flow{grid-template-columns:1fr}
+  .flow>div{padding:12px 0;border-bottom:1px solid var(--line)}
+  .flow>div::after{display:none}
+  .day>div{grid-template-columns:1fr;gap:4px}
+}
+@media (prefers-reduced-motion:no-preference){.btn{transition:transform .15s}.btn:hover{transform:translateY(-1px)}}
+</style>
+</head><body>
+
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <div class="eyebrow">Personal multi-agent cockpit</div>
+      <h1 style="margin-top:14px">自驱舱<small>SELFPILOT</small></h1>
+      <p class="thesis">一支只为你工作的智能体小队，管学习，也管生活。</p>
+      <p class="lede">六位分工明确的智能体共享你的任务、习惯、笔记、记忆卡和账本。它们读你的真实数据，说完就能直接记账、建任务、打卡。每一位的角色、模型和权限都由你来定义。</p>
+      <div class="ctas">
+        <a class="btn pri" href="https://dingyue-xu.github.io/side-projects/selfpilot/" target="_blank" rel="noopener">在线体验 →</a>
+        <a class="btn" href="https://github.com/dingyue-xu/side-projects/tree/main/selfpilot" target="_blank" rel="noopener">源码与部署说明</a>
+      </div>
+      <div class="facts">
+        <div><b>6</b><span>默认智能体</span></div>
+        <div><b>12</b><span>种数据动作</span></div>
+        <div><b>8</b><span>个数据模块</span></div>
+        <div><b>0</b><span>依赖 / 构建步骤</span></div>
+      </div>
+    </div>
+
+    <div class="screen" aria-label="圆桌对话示例">
+      <div class="screen-h"><span>🪑 圆桌 · 随手记</span><span>08:42</span></div>
+      <div class="u">午饭花了 35，提醒我明天交周报，今天阅读打卡了</div>
+      <div class="route">总管分派 → 财务管家 · 时间管家 · 健康管家</div>
+      <div class="m"><span class="av">💰</span><div class="b"><div class="who">财务管家</div>记下了。本月餐饮 ¥412，比上月同期少 18%。<div class="act">✓ 记账　支出 ¥35 · 餐饮</div></div></div>
+      <div class="m"><span class="av">⏱️</span><div class="b"><div class="who">时间管家</div>周报排在明天上午 10:00–11:00 的时间块。<div class="act">✓ 新建任务　交周报（10-13）</div></div></div>
+      <div class="m"><span class="av">🌿</span><div class="b"><div class="who">健康管家</div>阅读已经连续 6 天，今晚试试 23:30 前睡。<div class="act">✓ 习惯打卡　阅读 30 分钟</div></div></div>
+      <div class="m"><span class="av">🧭</span><div class="b"><div class="who">总管 · 综合结论</div>三件事都记好了。明天先交周报，再把剩下 2 张记忆卡复习掉。</div></div>
+    </div>
+  </header>
+
+  <section>
+    <div class="eyebrow">为什么做它</div>
+    <h2>自我管理工具的三个老问题</h2>
+    <div class="three">
+      <div><h3>数据散落</h3><p class="muted">待办、打卡、记账、笔记各在一个 App。没有一处能同时看到这周学了什么、花了多少、睡得怎么样。</p></div>
+      <div><h3>AI 只给建议</h3><p class="muted">和聊天机器人聊完一套计划，还得自己一条条抄进各个 App。下次再聊，它已经不记得你了。</p></div>
+      <div><h3>通用助手不够专</h3><p class="muted">一个助手什么都管，提示词越写越长，哪方面都不够专业，也没法给它划定能动哪些数据。</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">团队与权限</div>
+    <h2>每位智能体只碰它该碰的数据</h2>
+    <p class="lede">权限在智能体编辑页勾选。智能体只能读到被授权的数据，越权的动作会被拒绝。你可以新建任意多位智能体，或者用模板一键创建英语陪练、读书搭子、求职顾问、饮食规划师。</p>
+    <div class="matrix">
+      <table>
+        <thead><tr><th>智能体</th><th>职责</th><th>任务</th><th>目标</th><th>习惯</th><th>日记</th><th>笔记</th><th>记忆卡</th><th>账本</th><th>长期记忆</th></tr></thead>
+        <tbody id="mx"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">协作机制</div>
+    <h2>说一句话之后发生了什么</h2>
+    <div class="flow">
+      <div><h3>你说一句</h3><p>首页输入框、圆桌对话，或任何对话里 @点名。</p></div>
+      <div><h3>总管路由</h3><p>判断该谁回答，选 0~3 位专家；闲聊和综合问题由总管自己接。</p></div>
+      <div><h3>专家并行</h3><p>各自读自己有权限的数据，同时发言，必要时用 <span class="mono">ask_agent</span> 请教同事。</p></div>
+      <div><h3>总管综合</h3><p>去重、排优先级，给出最多 3 条下一步。</p></div>
+      <div><h3>动作落地</h3><p>记账、任务、打卡、卡片写入你的数据，并记进团队动态。</p></div>
+    </div>
+    <div class="modes">
+      <div class="mode"><h3>圆桌会议</h3><code>mode: council</code><p>自动分派，多位专家发言后由总管给结论。</p></div>
+      <div class="mode"><h3>单聊</h3><code>mode: agent</code><p>和一位智能体深聊，比如让学习教练讲透一个概念。</p></div>
+      <div class="mode"><h3>@点名</h3><code>@健康管家 …</code><p>跳过路由，指定的智能体直接回答。</p></div>
+      <div class="mode"><h3>工作流</h3><code>steps → synth</code><p>多个智能体按顺序接力，后一步能看到前面所有输出，可以定时。</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">动作协议</div>
+    <h2>AI 说完就能做，但做什么由你把关</h2>
+    <div class="split">
+      <pre>好的，午饭记上了，周报排到明天上午。
+
+```actions
+[{"type":"add_expense","amount":35,
+  "category":"餐饮","note":"午饭"},
+ {"type":"add_task","title":"交周报",
+  "due":"2026-10-13"}]
+```</pre>
+      <div class="guards">
+        <p class="muted">智能体在回复末尾附一段结构化动作，平台解析后写进你的数据。任何能输出文字的模型都能用，不依赖某家的工具调用接口。</p>
+        <div><b>权限</b><p>只开放被授权数据域的动作，越权会被拒绝并标红。</p></div>
+        <div><b>去重</b><p>多位智能体并行时，同一笔账、同一个任务不会重复记录。</p></div>
+        <div><b>确认</b><p>可关闭「自动执行」，每个动作都要你点「执行」才生效。</p></div>
+        <div><b>留痕</b><p>谁在什么时候做了什么，都记在首页的团队动态里。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">一天怎么用</div>
+    <h2>三个工作流，加上随时一句话</h2>
+    <div class="day">
+      <div><time>07:30</time><div><h3>晨间启动</h3><p>时间管家挑出今天最重要的 3 件事，学习教练排 30~60 分钟学习，健康管家给一句提醒，总管汇总成简报，放在首页。</p></div></div>
+      <div><time>白天</time><div><h3>随手记</h3><p>「打车 28」「提醒我周五前交报告」「今天跑了 5 公里」，小队自动记账、建任务、打卡。</p></div></div>
+      <div><time>学习时</time><div><h3>单聊学习教练</h3><p>讲透一个知识点，关键概念自动变成记忆卡，按 SM-2 间隔重复安排复习。</p></div></div>
+      <div><time>21:30</time><div><h3>晚间复盘</h3><p>复盘导师按「做成了什么 → 卡在哪里 → 学到什么 → 明天改一件事」写复盘，存进日记。</p></div></div>
+      <div><time>周日 20:00</time><div><h3>周复盘</h3><p>四位管家各自汇报，复盘导师总结问题模式，把下周 3 个重点加成任务。</p></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">自己定义</div>
+    <h2>能改的，基本都能改</h2>
+    <div class="split">
+      <div class="guards">
+        <div><b>智能体</b><p>名称、图标、一句话角色、系统提示词、服务商、模型、思考强度或温度、数据权限、启用与停用。编辑页能预览它实际收到的完整提示词。</p></div>
+        <div><b>工作流</b><p>步骤顺序、每一步由谁做什么、汇总人、手动 / 每天 / 每周触发。</p></div>
+        <div><b>模型</b><p>每位智能体可以用不同的模型。比如总管用 Claude，记账用便宜的 DeepSeek，私密日记交给本地 Ollama。</p></div>
+        <div><b>能力</b><p>在 <span class="mono">SP.ACTIONS</span> 里加一项就是一种新动作，权限和提示词自动生效。</p></div>
+      </div>
+      <div class="chips" style="align-content:flex-start">
+        <span>Claude</span><span>DeepSeek</span><span>通义千问</span><span>Kimi</span><span>智谱 GLM</span><span>OpenAI</span><span>Ollama 本地</span><span>任意 OpenAI 兼容接口</span><span>离线演示模式</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">部署</div>
+    <h2>三种方式，从双击打开到多端同步</h2>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>方式</th><th>怎么启动</th><th>跨域转发</th><th>多端同步</th><th>适合</th></tr></thead>
+        <tbody>
+          <tr><td>纯静态</td><td>打开 <code>index.html</code> 或 GitHub Pages</td><td class="no">—</td><td class="no">导出 / 导入备份</td><td>先体验，或只用 Claude</td></tr>
+          <tr><td>本机服务</td><td><code>node server.mjs</code></td><td class="yes">✓</td><td class="no">单机</td><td>日常在电脑上用国内模型</td></tr>
+          <tr><td>服务器 / Docker</td><td><code>SP_TOKEN=… node server.mjs</code> 或 <code>docker run</code></td><td class="yes">✓</td><td class="yes">✓ 冲突时让你选</td><td>手机和电脑一起用</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="lede">服务端零依赖，约 150 行：只转发 https 或本机 http 的模型请求，同步用版本号防止互相覆盖，每天自动留一份快照。</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">隐私与边界</div>
+    <h2>数据在你手里</h2>
+    <div class="three">
+      <div><h3>本地优先</h3><p class="muted">默认数据只存在浏览器本地。API Key 只存本机，请求直接发往你选的模型服务商。</p></div>
+      <div><h3>随时带走</h3><p class="muted">一键导出 JSON 备份；开启同步后，服务端也只是一个 JSON 文件。</p></div>
+      <div><h3>还没做到的</h3><p class="muted">定时工作流只在页面打开时触发，错过当天会补跑一次。服务端定时执行、语音输入和按条目合并同步在后续计划里。</p></div>
+    </div>
+  </section>
+
+  <footer><span>自驱舱 SelfPilot · 自用的学习与生活多智能体平台</span><span class="mono">HTML · JS · Node 18+</span></footer>
+</div>
+
+<script>
+(function () {
+  var D = ['tasks', 'goals', 'habits', 'journal', 'notes', 'cards', 'money', 'memory'];
+  var A = [
+    ['🧭 总管', '理解意图、分派、汇总结论', D],
+    ['📚 学习教练', '学习计划、费曼讲解、出记忆卡', ['tasks', 'goals', 'notes', 'cards', 'memory']],
+    ['⏱️ 时间管家', '优先级、日/周计划、重新排期', ['tasks', 'goals', 'memory']],
+    ['🌿 健康管家', '睡眠、运动、饮食、习惯打卡', ['habits', 'journal', 'memory']],
+    ['💰 财务管家', '记账、预算、消费分析', ['money', 'goals', 'memory']],
+    ['🪞 复盘导师', '日记、情绪觉察、每日/每周复盘', ['journal', 'goals', 'tasks', 'habits', 'memory']]
+  ];
+  document.getElementById('mx').innerHTML = A.map(function (a) {
+    return '<tr><td>' + a[0] + '</td><td class="role">' + a[1] + '</td>' + D.map(function (d) {
+      var on = a[2].indexOf(d) >= 0;
+      return '<td><span class="dot' + (on ? '' : ' off') + '" aria-label="' + (on ? '有权限' : '无权限') + '"></span></td>';
+    }).join('') + '</tr>';
+  }).join('');
+})();
+</script>
+</body></html>
